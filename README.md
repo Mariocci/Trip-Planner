@@ -16,26 +16,26 @@ The application follows a strict layered architecture pattern:
 - **Data Access Layer** (`trip-planner-data-access`): Repositories for database operations
 
 ### Tier 3: Database Layer (Data Tier)
-- PostgreSQL relational database
+- H2 embedded database (file-based)
 
 ## Project Structure
 
 ```
 trip-planner-parent/
-├── trip-planner-domain/          # Domain entities and DTOs
+├── domain/                       # Domain entities and DTOs
 │   └── src/main/java/com/tripplanner/domain/
 │       ├── entity/               # JPA entities
 │       └── dto/                  # Data Transfer Objects
 │
-├── trip-planner-data-access/     # Data Access Layer
+├── data-access/                  # Data Access Layer
 │   └── src/main/java/com/tripplanner/dataaccess/
 │       └── repository/           # Spring Data JPA repositories
 │
-├── trip-planner-business/        # Business Logic Layer
+├── business/                     # Business Logic Layer
 │   └── src/main/java/com/tripplanner/business/
 │       └── service/              # Business services
 │
-└── trip-planner-presentation/    # Presentation Layer
+└── presentation/                 # Presentation Layer
     └── src/main/java/com/tripplanner/
         ├── TripPlannerApplication.java  # Main application
         └── presentation/
@@ -48,7 +48,7 @@ trip-planner-parent/
 - **Framework**: Spring Boot 3.2.0
 - **Language**: Java 17
 - **Build Tool**: Maven
-- **Database**: PostgreSQL
+- **Database**: H2 (embedded, file-based)
 - **ORM**: Spring Data JPA with Hibernate
 - **Security**: Spring Security + OAuth2 Client
 - **Authentication**: JWT tokens
@@ -58,7 +58,7 @@ trip-planner-parent/
 ### Dependencies
 - Spring Boot Starter Web
 - Spring Boot Starter Data JPA
-- PostgreSQL Driver
+- H2 Database
 - Spring Boot Starter Security
 - Spring Boot Starter OAuth2 Client
 - MapStruct
@@ -71,23 +71,16 @@ trip-planner-parent/
 
 - Java 17 or higher
 - Maven 3.6+
-- PostgreSQL 14+
 - Node.js 18+ (for frontend)
 
-## Database Setup
+## Database
 
-1. Install PostgreSQL
-2. Create database:
-```sql
-CREATE DATABASE tripplanner;
-```
+The application uses H2 embedded database which requires no separate installation. The database file will be automatically created in the `./data/` directory when you first run the application.
 
-3. Update credentials in `trip-planner-presentation/src/main/resources/application.properties`:
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/tripplanner
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-```
+You can access the H2 console at `http://localhost:8080/h2-console` with:
+- JDBC URL: `jdbc:h2:file:./data/tripplanner`
+- Username: `sa`
+- Password: (leave empty)
 
 ## Building the Project
 
@@ -96,7 +89,7 @@ spring.datasource.password=your_password
 mvn clean install
 
 # Run the application
-cd trip-planner-presentation
+cd presentation
 mvn spring-boot:run
 ```
 
@@ -105,7 +98,7 @@ The application will start on `http://localhost:8080`
 ## Module Dependencies
 
 Following the layered architecture:
-- `trip-planner-presentation` → `trip-planner-business` → `trip-planner-data-access` → `trip-planner-domain`
+- `presentation` → `business` → `data-access` → `domain`
 - Each layer only communicates with its adjacent layer
 - No layer skipping allowed
 
@@ -140,7 +133,7 @@ Once running, API documentation will be available at:
 mvn test
 
 # Run tests for specific module
-cd trip-planner-business
+cd business
 mvn test
 ```
 

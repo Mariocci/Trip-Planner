@@ -1,0 +1,84 @@
+.trip-detail {
+  background-color: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.detail-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.detail-header h2 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.detail-header p {
+  color: #7f8c8d;
+  margin-bottom: 0.3rem;
+}
+
+.trip-dates {
+  color: #3498db !important;
+  font-weight: 500;
+}
+
+.detail-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.detail-tabs button {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #7f8c8d;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.detail-tabs button:hover {
+  color: #2c3e50;
+}
+
+.detail-tabs button.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.detail-content {
+  min-height: 300px;
+}
+
+.detail-list {
+  padding: 1rem 0;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.list-header h3 {
+  color: #2c3e50;
+  font-size: 1.3rem;
+}
+
+.detail-form {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+}
