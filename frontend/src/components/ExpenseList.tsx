@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Expense } from '../types/index';
+import { api } from '../api/axios-config';
 
 interface ExpenseListProps {
   tripId: number;
@@ -41,25 +42,24 @@ function ExpenseList({ tripId, userId, expenses, onRefresh }: ExpenseListProps) 
     e.preventDefault();
     
     try {
-      const url = editingId
-        ? `http://localhost:8080/api/trips/${tripId}/expenses/${editingId}?userId=${userId}`
-        : `http://localhost:8080/api/trips/${tripId}/expenses?userId=${userId}`;
+      const payload = {
+        ...formData,
+        iznos: parseFloat(formData.iznos)
+      };
       
-      const method = editingId ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          iznos: parseFloat(formData.iznos)
-        })
-      });
-      
-      if (response.ok) {
-        onRefresh();
-        resetForm();
+      if (editingId) {
+        await api.put(
+          `/trips/${tripId}/expenses/${editingId}?userId=${userId}`,
+          payload
+        );
+      } else {
+        await api.post(
+          `/trips/${tripId}/expenses?userId=${userId}`,
+          payload
+        );
       }
+      onRefresh();
+      resetForm();
     } catch (error) {
       console.error('Error saving expense:', error);
       alert('Failed to save expense');
@@ -70,14 +70,10 @@ function ExpenseList({ tripId, userId, expenses, onRefresh }: ExpenseListProps) 
     if (!confirm('Delete this expense?')) return;
     
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/trips/${tripId}/expenses/${expenseId}?userId=${userId}`,
-        { method: 'DELETE' }
+      await api.delete(
+        `/trips/${tripId}/expenses/${expenseId}?userId=${userId}`
       );
-      
-      if (response.ok) {
-        onRefresh();
-      }
+      onRefresh();
     } catch (error) {
       console.error('Error deleting expense:', error);
       alert('Failed to delete expense');

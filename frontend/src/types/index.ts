@@ -25,6 +25,7 @@ export interface Activity {
   datumVrijemeKraj: string;
   putovanjeId: number;
   lokacijaId: number;
+  lokacija?: Location;
 }
 
 export interface Location {

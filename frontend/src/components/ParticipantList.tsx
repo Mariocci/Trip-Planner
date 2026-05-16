@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Participant } from '../types/index';
+import { api } from '../api/axios-config';
 
 interface ParticipantListProps {
   tripId: number;
@@ -27,25 +28,31 @@ function ParticipantList({ tripId, userId, participants, onRefresh }: Participan
     e.preventDefault();
     
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/trips/${tripId}/participants?requestingUserId=${userId}`,
+      await api.post(
+        `/trips/${tripId}/participants?requestingUserId=${userId}`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: formData.email,
-            uloga: formData.uloga
-          })
+          email: formData.email,
+          uloga: formData.uloga
         }
       );
-      
-      if (response.ok) {
-        onRefresh();
-        resetForm();
-      }
-    } catch (error) {
+      onRefresh();
+      resetForm();
+    } catch (error: any) {
       console.error('Error adding participant:', error);
-      alert('Failed to add participant');
+      
+      // Extract error message from response
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to add participant';
+      
+      // Show user-friendly error message
+      if (errorMessage.includes('User not found')) {
+        alert(`User with email "${formData.email}" doesn't exist in the system. They need to log in at least once before being added as a participant.`);
+      } else if (errorMessage.includes('already a participant')) {
+        alert('This user is already a participant of this trip.');
+      } else if (errorMessage.includes('Access denied')) {
+        alert('You do not have permission to add participants to this trip.');
+      } else {
+        alert(errorMessage);
+      }
     }
   };
 
@@ -53,37 +60,47 @@ function ParticipantList({ tripId, userId, participants, onRefresh }: Participan
     if (!confirm('Remove this participant?')) return;
     
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/trips/${tripId}/participants/${participantId}?requestingUserId=${userId}`,
-        { method: 'DELETE' }
+      await api.delete(
+        `/trips/${tripId}/participants/${participantId}?requestingUserId=${userId}`
       );
-      
-      if (response.ok) {
-        onRefresh();
-      }
-    } catch (error) {
+      onRefresh();
+    } catch (error: any) {
       console.error('Error removing participant:', error);
-      alert('Failed to remove participant');
+      
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to remove participant';
+      
+      if (errorMessage.includes('last organizer')) {
+        alert('Cannot remove the last organizer from the trip.');
+      } else if (errorMessage.includes('Access denied')) {
+        alert('You do not have permission to remove participants from this trip.');
+      } else {
+        alert(errorMessage);
+      }
     }
   };
 
   const handleRoleChange = async (participantId: number, newRole: string) => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/trips/${tripId}/participants/${participantId}/role?requestingUserId=${userId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uloga: newRole })
-        }
+      await api.put(
+        `/trips/${tripId}/participants/${participantId}/role?requestingUserId=${userId}`,
+        { uloga: newRole }
       );
-      
-      if (response.ok) {
-        onRefresh();
-      }
-    } catch (error) {
+      onRefresh();
+    } catch (error: any) {
       console.error('Error updating role:', error);
-      alert('Failed to update role');
+      
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update role';
+      
+      if (errorMessage.includes('last organizer')) {
+        alert('Cannot demote the last organizer of the trip.');
+      } else if (errorMessage.includes('Access denied')) {
+        alert('You do not have permission to change participant roles.');
+      } else {
+        alert(errorMessage);
+      }
+      
+      // Refresh to revert the UI change
+      onRefresh();
     }
   };
 

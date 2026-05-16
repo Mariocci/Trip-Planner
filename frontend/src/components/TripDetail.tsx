@@ -4,6 +4,7 @@ import ActivityList from './ActivityList';
 import ExpenseList from './ExpenseList';
 import ParticipantList from './ParticipantList';
 import './TripDetail.css';
+import { api } from '../api/axios-config';
 
 interface TripDetailProps {
   trip: Trip;
@@ -45,13 +46,10 @@ function TripDetail({ trip, userId, onTripUpdated }: TripDetailProps) {
 
   const loadActivities = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/trips/${trip.putovanjeId}/activities?userId=${userId}`
+      const response = await api.get<Activity[]>(
+        `/trips/${trip.putovanjeId}/activities?userId=${userId}`
       );
-      if (response.ok) {
-        const data = await response.json();
-        setActivities(data);
-      }
+      setActivities(response.data);
     } catch (error) {
       console.error('Error loading activities:', error);
     }
@@ -59,13 +57,10 @@ function TripDetail({ trip, userId, onTripUpdated }: TripDetailProps) {
 
   const loadExpenses = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/trips/${trip.putovanjeId}/expenses?userId=${userId}`
+      const response = await api.get<Expense[]>(
+        `/trips/${trip.putovanjeId}/expenses?userId=${userId}`
       );
-      if (response.ok) {
-        const data = await response.json();
-        setExpenses(data);
-      }
+      setExpenses(response.data);
     } catch (error) {
       console.error('Error loading expenses:', error);
     }
@@ -73,13 +68,10 @@ function TripDetail({ trip, userId, onTripUpdated }: TripDetailProps) {
 
   const loadParticipants = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/trips/${trip.putovanjeId}/participants?userId=${userId}`
+      const response = await api.get<Participant[]>(
+        `/trips/${trip.putovanjeId}/participants?userId=${userId}`
       );
-      if (response.ok) {
-        const data = await response.json();
-        setParticipants(data);
-      }
+      setParticipants(response.data);
     } catch (error) {
       console.error('Error loading participants:', error);
     }

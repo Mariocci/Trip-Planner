@@ -44,4 +44,16 @@ public interface UserService {
      * @return true if email is unique, false otherwise
      */
     boolean isEmailUnique(String email, Integer excludeUserId);
+
+    /**
+     * Finds an existing user by email or creates a new user from Auth0 data.
+     * This method is called when a user logs in via Auth0 to ensure they exist in the database.
+     *
+     * @param email the user's email from Auth0
+     * @param name the user's full name from Auth0
+     * @param sub the Auth0 subject identifier (oauth_id)
+     * @param picture the user's profile picture URL from Auth0
+     * @return the user details (existing or newly created)
+     */
+    UserResponseDTO findOrCreateUserFromAuth0(String email, String name, String sub, String picture);
 }

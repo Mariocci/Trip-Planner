@@ -61,6 +61,28 @@ public class UserServiceImpl implements UserService {
                 .orElse(true);
     }
 
+    @Override
+    public UserResponseDTO findOrCreateUserFromAuth0(String email, String name, String sub, String picture) {
+        return userRepository.findByEmail(email)
+                .map(this::mapToResponseDTO)
+                .orElseGet(() -> {
+                    // Parse name into first and last name
+                    String[] nameParts = name != null ? name.split(" ", 2) : new String[]{"", ""};
+                    String firstName = nameParts.length > 0 ? nameParts[0] : "";
+                    String lastName = nameParts.length > 1 ? nameParts[1] : "";
+                    
+                    Korisnik newUser = Korisnik.builder()
+                            .email(email)
+                            .ime(firstName)
+                            .prezime(lastName)
+                            .oauthProvider("auth0")
+                            .oauthId(sub)
+                            .build();
+                    newUser = userRepository.save(newUser);
+                    return mapToResponseDTO(newUser);
+                });
+    }
+
     private UserResponseDTO mapToResponseDTO(Korisnik user) {
         return UserResponseDTO.builder()
                 .korisnikId(user.getKorisnikId())

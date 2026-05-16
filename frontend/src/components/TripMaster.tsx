@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Trip } from '../types/index';
 import './TripMaster.css';
+import { api } from '../api/axios-config';
 
 interface TripMasterProps {
   trips: Trip[];
@@ -10,9 +11,8 @@ interface TripMasterProps {
   onTripUpdated: (trip: Trip) => void;
   onTripDeleted: (tripId: number) => void;
   loading: boolean;
+  userId: number;
 }
-
-const TEMP_USER_ID = 1;
 
 function TripMaster({
   trips,
@@ -21,7 +21,8 @@ function TripMaster({
   onTripCreated,
   onTripUpdated,
   onTripDeleted,
-  loading
+  loading,
+  userId
 }: TripMasterProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -58,36 +59,20 @@ function TripMaster({
     try {
       if (isEditing && selectedTrip) {
         // Update existing trip
-        const response = await fetch(
-          `http://localhost:8080/api/trips/${selectedTrip.putovanjeId}?userId=${TEMP_USER_ID}`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-          }
+        const response = await api.put<Trip>(
+          `/trips/${selectedTrip.putovanjeId}?userId=${userId}`,
+          formData
         );
-        
-        if (response.ok) {
-          const updatedTrip = await response.json();
-          onTripUpdated(updatedTrip);
-          resetForm();
-        }
+        onTripUpdated(response.data);
+        resetForm();
       } else {
         // Create new trip
-        const response = await fetch(
-          `http://localhost:8080/api/trips?userId=${TEMP_USER_ID}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-          }
+        const response = await api.post<Trip>(
+          `/trips?userId=${userId}`,
+          formData
         );
-        
-        if (response.ok) {
-          const newTrip = await response.json();
-          onTripCreated(newTrip);
-          resetForm();
-        }
+        onTripCreated(response.data);
+        resetForm();
       }
     } catch (error) {
       console.error('Error saving trip:', error);
@@ -99,15 +84,9 @@ function TripMaster({
     if (!confirm('Are you sure you want to delete this trip?')) return;
     
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/trips/${tripId}?userId=${TEMP_USER_ID}`,
-        { method: 'DELETE' }
-      );
-      
-      if (response.ok) {
-        onTripDeleted(tripId);
-        resetForm();
-      }
+      await api.delete(`/trips/${tripId}?userId=${userId}`);
+      onTripDeleted(tripId);
+      resetForm();
     } catch (error) {
       console.error('Error deleting trip:', error);
       alert('Failed to delete trip');
