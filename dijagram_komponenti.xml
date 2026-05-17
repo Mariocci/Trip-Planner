@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net" agent="5.0">
+  <diagram id="diagram_1" name="Page-1">
+    <mxGraphModel dx="1542" dy="898" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" style="shape=module;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=middle;align=center;" value="&lt;i&gt;«application»&lt;/i&gt;&lt;br&gt;&lt;b&gt;Frontend&lt;/b&gt;&lt;br&gt;(React / Vite)" vertex="1">
+          <mxGeometry height="80" width="180" x="60" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="3" parent="1" style="shape=module;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=middle;align=center;" value="&lt;i&gt;«executable»&lt;/i&gt;&lt;br&gt;&lt;b&gt;PresentationLayer.jar&lt;/b&gt;&lt;br&gt;(Spring Controllers)" vertex="1">
+          <mxGeometry height="80" width="210" x="320" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="4" parent="1" style="shape=module;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=middle;align=center;" value="&lt;i&gt;«library»&lt;/i&gt;&lt;br&gt;&lt;b&gt;BusinessLayer.jar&lt;/b&gt;&lt;br&gt;(Services &amp; Impl)" vertex="1">
+          <mxGeometry height="80" width="210" x="320" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="5" parent="1" style="shape=module;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=middle;align=center;" value="&lt;i&gt;«library»&lt;/i&gt;&lt;br&gt;&lt;b&gt;DataAccessLayer.jar&lt;/b&gt;&lt;br&gt;(Repositories)" vertex="1">
+          <mxGeometry height="80" width="210" x="320" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="6" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=middle;align=center;" value="&lt;i&gt;«datastore»&lt;/i&gt;&lt;br&gt;&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;(tripplanner)" vertex="1">
+          <mxGeometry height="80" width="160" x="345" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="7" parent="1" style="shape=module;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=middle;align=center;" value="&lt;i&gt;«library»&lt;/i&gt;&lt;br&gt;&lt;b&gt;DomainModel.jar&lt;/b&gt;&lt;br&gt;(Entities &amp; DTOs)" vertex="1">
+          <mxGeometry height="80" width="200" x="660" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="8" edge="1" parent="1" source="2" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="3" value="HTTP / REST">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="9" edge="1" parent="1" source="3" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="4" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="10" edge="1" parent="1" source="4" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="5" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="11" edge="1" parent="1" source="5" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="6" value="SQL / JPA">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="12" edge="1" parent="1" source="3" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="13" edge="1" parent="1" source="4" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="14" edge="1" parent="1" source="5" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

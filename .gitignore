@@ -70,3 +70,12 @@ replay_pid*
 # OS
 .DS_Store
 Thumbs.db
+
+# Kiro AI assistant files
+.kiro/
+
+# Redundant setup files
+SETUP_INSTRUCTIONS.md
+RUNNING.md
+AUTH0_CONFIGURED.md
+maven-wrapper.zip

@@ -32,6 +32,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok.version>1.18.30</lombok.version>
+        <junit.version>5.10.1</junit.version>
+        <mockito.version>5.7.0</mockito.version>
+        <assertj.version>3.24.2</assertj.version>
+        <jacoco.version>0.8.11</jacoco.version>
+        <h2.version>2.2.224</h2.version>
     </properties>
 
     <dependencyManagement>
@@ -66,6 +71,51 @@
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <!-- Testing Dependencies -->
+            <!-- JUnit 5 -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Mockito -->
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- AssertJ -->
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- H2 Database -->
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -113,7 +163,205 @@
                         </compilerArgs>
                     </configuration>
                 </plugin>
+
+                <!-- ============================================================
+                     Task 13.1 - Maven Surefire Plugin: test execution & reporting
+                     Requirements: 9.1, 9.2, 9.3, 9.4, 9.9, 9.10
+                     ============================================================ -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.2</version>
+                    <configuration>
+                        <!-- Include standard test naming patterns (Req 9.1) -->
+                        <includes>
+                            <include>**/*Test.java</include>
+                            <include>**/*Tests.java</include>
+                        </includes>
+                        <!-- JaCoCo agent injected via surefireArgLine; heap size for Spring contexts -->
+                        <argLine>${surefireArgLine} -Xmx1024m</argLine>
+                        <!-- Reports written to target/surefire-reports (Req 9.3) -->
+                        <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                        <!-- Fail the build on first test failure (Req 9.4) -->
+                        <forkCount>1</forkCount>
+                        <reuseForks>true</reuseForks>
+                        <!-- Write XML + plain-text reports (Req 9.3) -->
+                        <useFile>true</useFile>
+                        <reportFormat>both</reportFormat>
+                        <!-- Print per-test timing summary (Req 9.9) -->
+                        <printSummary>true</printSummary>
+                        <!-- Keep full stack traces for clear failure messages (Req 9.10) -->
+                        <trimStackTrace>false</trimStackTrace>
+                        <!-- Do not fail when a module has no tests -->
+                        <failIfNoTests>false</failIfNoTests>
+                    </configuration>
+                </plugin>
+
+                <!-- ============================================================
+                     Task 13.2 - JaCoCo Plugin: coverage reports & thresholds
+                     Requirements: 9.5, 9.6, 8.1, 8.2, 8.3
+                     ============================================================ -->
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <executions>
+                        <!-- Inject JaCoCo agent before tests run -->
+                        <execution>
+                            <id>prepare-agent</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                            <configuration>
+                                <!-- Expose agent arg so Surefire can pick it up -->
+                                <propertyName>surefireArgLine</propertyName>
+                            </configuration>
+                        </execution>
+                        <!-- Generate HTML/XML/CSV report in target/site/jacoco (Req 9.6) -->
+                        <execution>
+                            <id>report</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+                            </configuration>
+                        </execution>
+                        <!-- Enforce per-package coverage thresholds during verify (Req 8.1, 8.2, 8.3) -->
+                        <execution>
+                            <id>check</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <!-- Service layer: 80% line coverage (Req 8.1) -->
+                                    <rule>
+                                        <element>PACKAGE</element>
+                                        <includes>
+                                            <include>**/service/**</include>
+                                            <include>**/service/impl/**</include>
+                                        </includes>
+                                        <limits>
+                                            <limit>
+                                                <counter>LINE</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>0.80</minimum>
+                                            </limit>
+                                        </limits>
+                                    </rule>
+                                    <!-- Controller layer: 70% line coverage (Req 8.2) -->
+                                    <rule>
+                                        <element>PACKAGE</element>
+                                        <includes>
+                                            <include>**/controller/**</include>
+                                        </includes>
+                                        <limits>
+                                            <limit>
+                                                <counter>LINE</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>0.70</minimum>
+                                            </limit>
+                                        </limits>
+                                    </rule>
+                                    <!-- Repository layer: 90% line coverage (Req 8.3) -->
+                                    <rule>
+                                        <element>PACKAGE</element>
+                                        <includes>
+                                            <include>**/repository/**</include>
+                                        </includes>
+                                        <limits>
+                                            <limit>
+                                                <counter>LINE</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>0.90</minimum>
+                                            </limit>
+                                        </limits>
+                                    </rule>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
+
+        <!-- Activate Surefire and JaCoCo for every module in the reactor -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
+
+    <!-- ============================================================
+         Task 13.3 - Maven profiles for test categorisation
+         Requirements: 9.2, 9.7, 9.8
+         Usage:
+           mvn test -P unit-tests          (unit tests only)
+           mvn test -P integration-tests   (integration tests only)
+           mvn test -P all-tests           (all tests – default)
+         ============================================================ -->
+    <profiles>
+
+        <!-- Profile: unit tests only (excludes @SpringBootTest / @DataJpaTest) -->
+        <profile>
+            <id>unit-tests</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>integration</excludedGroups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Profile: integration tests only -->
+        <profile>
+            <id>integration-tests</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <groups>integration</groups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Profile: all tests (explicit, mirrors the default behaviour) -->
+        <profile>
+            <id>all-tests</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- No group filter – run everything -->
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
 </project>
