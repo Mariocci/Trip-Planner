@@ -29,7 +29,8 @@ function TripMaster({
     naziv: '',
     opis: '',
     datumPoc: '',
-    datumKraj: ''
+    datumKraj: '',
+    maxBudget: ''
   });
 
   const resetForm = () => {
@@ -37,7 +38,8 @@ function TripMaster({
       naziv: '',
       opis: '',
       datumPoc: '',
-      datumKraj: ''
+      datumKraj: '',
+      maxBudget: ''
     });
     setIsEditing(false);
   };
@@ -47,7 +49,8 @@ function TripMaster({
       naziv: trip.naziv,
       opis: trip.opis || '',
       datumPoc: trip.datumPoc,
-      datumKraj: trip.datumKraj
+      datumKraj: trip.datumKraj,
+      maxBudget: trip.maxBudget != null ? String(trip.maxBudget) : ''
     });
     setIsEditing(true);
     onSelectTrip(trip);
@@ -57,11 +60,15 @@ function TripMaster({
     e.preventDefault();
     
     try {
+      const payload = {
+        ...formData,
+        maxBudget: formData.maxBudget !== '' ? Number(formData.maxBudget) : null
+      };
       if (isEditing && selectedTrip) {
         // Update existing trip
         const response = await api.put<Trip>(
           `/trips/${selectedTrip.putovanjeId}?userId=${userId}`,
-          formData
+          payload
         );
         onTripUpdated(response.data);
         resetForm();
@@ -69,7 +76,7 @@ function TripMaster({
         // Create new trip
         const response = await api.post<Trip>(
           `/trips?userId=${userId}`,
-          formData
+          payload
         );
         onTripCreated(response.data);
         resetForm();
@@ -148,6 +155,20 @@ function TripMaster({
               />
             </div>
           </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Max Budget ($)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.maxBudget}
+                onChange={(e) => setFormData({ ...formData, maxBudget: e.target.value })}
+                placeholder="Optional"
+              />
+            </div>
+          </div>
           
           <div className="form-actions">
             <button type="submit" className="btn-primary">
@@ -180,7 +201,8 @@ function TripMaster({
                 <th>Name</th>
                 <th>Start Date</th>
                 <th>End Date</th>
-                <th>Total Cost</th>
+                <th>Spent</th>
+                <th>Budget</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -195,6 +217,11 @@ function TripMaster({
                   <td>{trip.datumPoc}</td>
                   <td>{trip.datumKraj}</td>
                   <td>${trip.ukTrosak?.toFixed(2) || '0.00'}</td>
+                  <td>
+                    {trip.maxBudget != null
+                      ? `$${trip.maxBudget.toFixed(2)}`
+                      : '—'}
+                  </td>
                   <td>
                     <button
                       onClick={() => handleEdit(trip)}

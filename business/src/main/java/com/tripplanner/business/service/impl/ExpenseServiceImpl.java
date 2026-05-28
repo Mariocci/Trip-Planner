@@ -12,6 +12,7 @@ import com.tripplanner.domain.entity.Trosak;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,16 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         Putovanje trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
+
+        // Check budget limit if set
+        if (trip.getMaxBudget() != null) {
+            BigDecimal currentTotal = expenseRepository.sumByPutovanjeId(tripId);
+            if (currentTotal == null) currentTotal = BigDecimal.ZERO;
+            if (currentTotal.add(createDTO.getIznos()).compareTo(trip.getMaxBudget()) > 0) {
+                throw new IllegalArgumentException(
+                    "Budget exceeded: adding this expense would surpass the trip budget of " + trip.getMaxBudget());
+            }
+        }
 
         Trosak expense = Trosak.builder()
                 .iznos(createDTO.getIznos())
@@ -92,6 +103,18 @@ public class ExpenseServiceImpl implements ExpenseService {
         }
 
         if (updateDTO.getIznos() != null) {
+            // Check budget if amount is changing
+            Putovanje trip = expense.getPutovanje();
+            if (trip.getMaxBudget() != null) {
+                BigDecimal currentTotal = expenseRepository.sumByPutovanjeId(trip.getPutovanjeId());
+                if (currentTotal == null) currentTotal = BigDecimal.ZERO;
+                // Subtract old amount, add new amount
+                BigDecimal newTotal = currentTotal.subtract(expense.getIznos()).add(updateDTO.getIznos());
+                if (newTotal.compareTo(trip.getMaxBudget()) > 0) {
+                    throw new IllegalArgumentException(
+                        "Budget exceeded: updating this expense would surpass the trip budget of " + trip.getMaxBudget());
+                }
+            }
             expense.setIznos(updateDTO.getIznos());
         }
         if (updateDTO.getOpis() != null) {

@@ -41,6 +41,9 @@ public class Putovanje {
     @Column(name = "ukTrosak", precision = 10, scale = 2)
     private BigDecimal ukTrosak;
 
+    @Column(name = "maxBudget", precision = 10, scale = 2)
+    private BigDecimal maxBudget;
+
     @OneToMany(mappedBy = "putovanje", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default

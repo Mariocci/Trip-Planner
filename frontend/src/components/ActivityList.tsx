@@ -89,7 +89,7 @@ function ActivityList({ tripId, userId, activities, onRefresh }: ActivityListPro
       const createdLocation = response.data;
       
       // Update form data with the new location ID
-      setFormData({ ...formData, lokacijaId: createdLocation.lokacijaId });
+      setFormData(prev => ({ ...prev, lokacijaId: createdLocation.lokacijaId }));
     } catch (error) {
       console.error('Error creating location:', error);
       alert('Failed to save location. Using default location.');
@@ -102,8 +102,11 @@ function ActivityList({ tripId, userId, activities, onRefresh }: ActivityListPro
       opis: activity.opis || '',
       datumVrijemePoc: activity.datumVrijemePoc,
       datumVrijemeKraj: activity.datumVrijemeKraj,
-      lokacijaId: activity.lokacijaId
+      lokacijaId: activity.location?.lokacijaId ?? 1
     });
+    if (activity.location) {
+      setLocationQuery(activity.location.naziv + (activity.location.adresa ? ', ' + activity.location.adresa : ''));
+    }
     setEditingId(activity.aktivnostId);
     setShowForm(true);
   };
@@ -265,7 +268,7 @@ function ActivityList({ tripId, userId, activities, onRefresh }: ActivityListPro
               <tr key={activity.aktivnostId}>
                 <td>{index + 1}</td>
                 <td>{activity.naziv}</td>
-                <td>{activity.lokacija?.naziv || 'N/A'}</td>
+                <td>{activity.location?.naziv || 'N/A'}</td>
                 <td>{new Date(activity.datumVrijemePoc).toLocaleString()}</td>
                 <td>{new Date(activity.datumVrijemeKraj).toLocaleString()}</td>
                 <td>

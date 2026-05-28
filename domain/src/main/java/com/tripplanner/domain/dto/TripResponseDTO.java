@@ -27,4 +27,6 @@ public class TripResponseDTO {
     private BigDecimal ukTrosak;
     
     private Integer participantCount;
+
+    private BigDecimal maxBudget;
 }

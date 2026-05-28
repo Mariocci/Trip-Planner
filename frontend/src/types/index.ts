@@ -15,6 +15,7 @@ export interface Trip {
   datumPoc: string;
   datumKraj: string;
   ukTrosak: number;
+  maxBudget?: number;
 }
 
 export interface Activity {
@@ -25,7 +26,7 @@ export interface Activity {
   datumVrijemeKraj: string;
   putovanjeId: number;
   lokacijaId: number;
-  lokacija?: Location;
+  location?: Location;
 }
 
 export interface Location {

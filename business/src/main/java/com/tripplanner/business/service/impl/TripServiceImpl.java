@@ -56,6 +56,7 @@ public class TripServiceImpl implements TripService {
                 .datumPoc(createDTO.getDatumPoc())
                 .datumKraj(createDTO.getDatumKraj())
                 .ukTrosak(BigDecimal.ZERO)
+                .maxBudget(createDTO.getMaxBudget())
                 .build();
 
         trip = tripRepository.save(trip);
@@ -115,6 +116,9 @@ public class TripServiceImpl implements TripService {
         if (updateDTO.getDatumKraj() != null) {
             trip.setDatumKraj(updateDTO.getDatumKraj());
         }
+        if (updateDTO.getMaxBudget() != null) {
+            trip.setMaxBudget(updateDTO.getMaxBudget());
+        }
 
         
         if (trip.getDatumKraj().isBefore(trip.getDatumPoc())) {
@@ -173,6 +177,7 @@ public class TripServiceImpl implements TripService {
                 .datumPoc(trip.getDatumPoc())
                 .datumKraj(trip.getDatumKraj())
                 .ukTrosak(trip.getUkTrosak())
+                .maxBudget(trip.getMaxBudget())
                 .participantCount(participantCount)
                 .build();
     }

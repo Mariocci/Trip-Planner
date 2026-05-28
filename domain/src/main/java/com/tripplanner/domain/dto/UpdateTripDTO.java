@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -20,4 +21,6 @@ public class UpdateTripDTO {
     private LocalDate datumPoc;
     
     private LocalDate datumKraj;
+
+    private BigDecimal maxBudget;
 }
