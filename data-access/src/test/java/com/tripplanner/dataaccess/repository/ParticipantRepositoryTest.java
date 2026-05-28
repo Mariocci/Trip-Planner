@@ -17,13 +17,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Unit tests for {@link ParticipantRepository}.
- * <p>
- * Uses @DataJpaTest to configure an in-memory H2 database for testing
- * repository operations without requiring a full application context.
- * </p>
- */
+
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class ParticipantRepositoryTest {
@@ -44,7 +38,7 @@ class ParticipantRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // Create test users
+        
         testUser1 = Korisnik.builder()
                 .ime("John")
                 .prezime("Doe")
@@ -60,7 +54,7 @@ class ParticipantRepositoryTest {
         entityManager.persist(testUser1);
         entityManager.persist(testUser2);
 
-        // Create test trips
+        
         testTrip1 = Putovanje.builder()
                 .naziv("Paris Trip")
                 .opis("Exploring Paris")
@@ -80,7 +74,7 @@ class ParticipantRepositoryTest {
         entityManager.persist(testTrip1);
         entityManager.persist(testTrip2);
 
-        // Create test participants
+        
         participant1 = Sudionik.builder()
                 .putovanje(testTrip1)
                 .korisnik(testUser1)
@@ -107,10 +101,10 @@ class ParticipantRepositoryTest {
 
     @Test
     void findByPutovanje_PutovanjeId_WithExistingTrip_ShouldReturnAllParticipants() {
-        // When
+        
         List<Sudionik> results = participantRepository.findByPutovanje_PutovanjeId(testTrip1.getPutovanjeId());
 
-        // Then
+        
         assertThat(results).hasSize(2);
         assertThat(results).extracting(Sudionik::getUloga)
                 .containsExactlyInAnyOrder("organizer", "participant");
@@ -118,56 +112,56 @@ class ParticipantRepositoryTest {
 
     @Test
     void findByPutovanje_PutovanjeId_WithTripWithOneParticipant_ShouldReturnOneParticipant() {
-        // When
+        
         List<Sudionik> results = participantRepository.findByPutovanje_PutovanjeId(testTrip2.getPutovanjeId());
 
-        // Then
+        
         assertThat(results).hasSize(1);
         assertThat(results.get(0).getUloga()).isEqualTo("organizer");
     }
 
     @Test
     void findByPutovanje_PutovanjeId_WithNonExistingTrip_ShouldReturnEmptyList() {
-        // When
+        
         List<Sudionik> results = participantRepository.findByPutovanje_PutovanjeId(99999);
 
-        // Then
+        
         assertThat(results).isEmpty();
     }
 
     @Test
     void findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId_WithExistingParticipant_ShouldReturnParticipant() {
-        // When
+        
         Optional<Sudionik> result = participantRepository.findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(
                 testTrip1.getPutovanjeId(), testUser1.getKorisnikId());
 
-        // Then
+        
         assertThat(result).isPresent();
         assertThat(result.get().getUloga()).isEqualTo("organizer");
     }
 
     @Test
     void findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId_WithNonParticipant_ShouldReturnEmpty() {
-        // When
+        
         Optional<Sudionik> result = participantRepository.findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(
                 testTrip2.getPutovanjeId(), testUser1.getKorisnikId());
 
-        // Then
+        
         assertThat(result).isEmpty();
     }
 
     @Test
     void countOrganizersByPutovanjeId_WithOneOrganizer_ShouldReturnOne() {
-        // When
+        
         Long count = participantRepository.countOrganizersByPutovanjeId(testTrip1.getPutovanjeId());
 
-        // Then
+        
         assertThat(count).isEqualTo(1L);
     }
 
     @Test
     void countOrganizersByPutovanjeId_WithNoOrganizers_ShouldReturnZero() {
-        // Given - create a trip with only participants (no organizers)
+        
         Putovanje tripWithoutOrganizer = Putovanje.builder()
                 .naziv("Test Trip")
                 .datumPoc(LocalDate.of(2024, 8, 1))
@@ -183,25 +177,25 @@ class ParticipantRepositoryTest {
         entityManager.persist(participantOnly);
         entityManager.flush();
 
-        // When
+        
         Long count = participantRepository.countOrganizersByPutovanjeId(tripWithoutOrganizer.getPutovanjeId());
 
-        // Then
+        
         assertThat(count).isEqualTo(0L);
     }
 
     @Test
     void countOrganizersByPutovanjeId_WithNonExistingTrip_ShouldReturnZero() {
-        // When
+        
         Long count = participantRepository.countOrganizersByPutovanjeId(99999);
 
-        // Then
+        
         assertThat(count).isEqualTo(0L);
     }
 
     @Test
     void save_ShouldPersistNewParticipant() {
-        // Given
+        
         Korisnik newUser = Korisnik.builder()
                 .ime("Bob")
                 .prezime("Johnson")
@@ -215,20 +209,20 @@ class ParticipantRepositoryTest {
                 .uloga("participant")
                 .build();
 
-        // When
+        
         Sudionik saved = participantRepository.save(newParticipant);
 
-        // Then
+        
         assertThat(saved.getSudionikId()).isNotNull();
         assertThat(participantRepository.findById(saved.getSudionikId())).isPresent();
     }
 
     @Test
     void findById_WithExistingParticipant_ShouldReturnParticipant() {
-        // When
+        
         Optional<Sudionik> result = participantRepository.findById(participant1.getSudionikId());
 
-        // Then
+        
         assertThat(result).isPresent();
         assertThat(result.get().getUloga()).isEqualTo("organizer");
         assertThat(result.get().getKorisnik().getEmail()).isEqualTo("john.doe@example.com");
@@ -237,19 +231,19 @@ class ParticipantRepositoryTest {
 
     @Test
     void findById_WithNonExistingId_ShouldReturnEmpty() {
-        // When
+        
         Optional<Sudionik> result = participantRepository.findById(99999);
 
-        // Then
+        
         assertThat(result).isEmpty();
     }
 
     @Test
     void findAll_ShouldReturnAllParticipants() {
-        // When
+        
         List<Sudionik> results = participantRepository.findAll();
 
-        // Then
+        
         assertThat(results).hasSize(3);
         assertThat(results).extracting(Sudionik::getUloga)
                 .containsExactlyInAnyOrder("organizer", "participant", "organizer");
@@ -257,42 +251,42 @@ class ParticipantRepositoryTest {
 
     @Test
     void delete_ShouldRemoveParticipant() {
-        // Given
+        
         Integer participantId = participant2.getSudionikId();
 
-        // When
+        
         participantRepository.delete(participant2);
         entityManager.flush();
 
-        // Then
+        
         assertThat(participantRepository.findById(participantId)).isEmpty();
         assertThat(participantRepository.findAll()).hasSize(2);
     }
 
     @Test
     void deleteById_ShouldRemoveParticipant() {
-        // Given
+        
         Integer participantId = participant2.getSudionikId();
 
-        // When
+        
         participantRepository.deleteById(participantId);
         entityManager.flush();
 
-        // Then
+        
         assertThat(participantRepository.findById(participantId)).isEmpty();
         assertThat(participantRepository.findAll()).hasSize(2);
     }
 
     @Test
     void save_UpdateExistingParticipant_ShouldUpdateRole() {
-        // Given
+        
         participant2.setUloga("organizer");
 
-        // When
+        
         Sudionik updated = participantRepository.save(participant2);
         entityManager.flush();
 
-        // Then
+        
         assertThat(updated.getUloga()).isEqualTo("organizer");
         Optional<Sudionik> retrieved = participantRepository.findById(participant2.getSudionikId());
         assertThat(retrieved).isPresent();
@@ -301,19 +295,19 @@ class ParticipantRepositoryTest {
 
     @Test
     void entityRelationships_ShouldBeProperlyPersisted() {
-        // When
+        
         Optional<Sudionik> result = participantRepository.findById(participant1.getSudionikId());
 
-        // Then
+        
         assertThat(result).isPresent();
         Sudionik participant = result.get();
         
-        // Verify user relationship
+        
         assertThat(participant.getKorisnik()).isNotNull();
         assertThat(participant.getKorisnik().getKorisnikId()).isEqualTo(testUser1.getKorisnikId());
         assertThat(participant.getKorisnik().getEmail()).isEqualTo("john.doe@example.com");
         
-        // Verify trip relationship
+        
         assertThat(participant.getPutovanje()).isNotNull();
         assertThat(participant.getPutovanje().getPutovanjeId()).isEqualTo(testTrip1.getPutovanjeId());
         assertThat(participant.getPutovanje().getNaziv()).isEqualTo("Paris Trip");
@@ -321,48 +315,48 @@ class ParticipantRepositoryTest {
 
     @Test
     void save_DuplicateUserAndTripCombination_ShouldThrowException() {
-        // Given - participant1 already exists with testUser1 and testTrip1
+        
         Sudionik duplicateParticipant = Sudionik.builder()
                 .putovanje(testTrip1)
                 .korisnik(testUser1)
                 .uloga("participant")
                 .build();
 
-        // When/Then - attempting to save should cause a constraint violation
+        
         participantRepository.save(duplicateParticipant);
         
-        // Flush to trigger the constraint check
+        
         try {
             entityManager.flush();
-            // If we reach here without exception, the unique constraint is not enforced at DB level
-            // This is acceptable as the constraint might be enforced at the service layer
+            
+            
         } catch (Exception e) {
-            // Expected behavior if database has unique constraint
+            
             assertThat(e).isNotNull();
         }
     }
 
     @Test
     void findByPutovanje_PutovanjeId_WithNullId_ShouldReturnEmptyList() {
-        // When
+        
         List<Sudionik> results = participantRepository.findByPutovanje_PutovanjeId(null);
 
-        // Then
+        
         assertThat(results).isEmpty();
     }
 
     @Test
     void findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId_WithNullIds_ShouldReturnEmpty() {
-        // When
+        
         Optional<Sudionik> result = participantRepository.findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(null, null);
 
-        // Then
+        
         assertThat(result).isEmpty();
     }
 
     @Test
     void countOrganizersByPutovanjeId_WithMultipleOrganizers_ShouldReturnCorrectCount() {
-        // Given - add another organizer to testTrip1
+        
         Korisnik newUser = Korisnik.builder()
                 .ime("Alice")
                 .prezime("Brown")
@@ -378,23 +372,23 @@ class ParticipantRepositoryTest {
         entityManager.persist(newOrganizer);
         entityManager.flush();
 
-        // When
+        
         Long count = participantRepository.countOrganizersByPutovanjeId(testTrip1.getPutovanjeId());
 
-        // Then
+        
         assertThat(count).isEqualTo(2L);
     }
 
     @Test
     void findAll_WithEmptyDatabase_ShouldReturnEmptyList() {
-        // Given - clear all participants
+        
         participantRepository.deleteAll();
         entityManager.flush();
 
-        // When
+        
         List<Sudionik> results = participantRepository.findAll();
 
-        // Then
+        
         assertThat(results).isEmpty();
     }
 }

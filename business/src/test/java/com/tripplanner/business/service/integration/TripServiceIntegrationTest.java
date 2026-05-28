@@ -25,16 +25,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Integration tests for {@link TripService} using real repositories backed by
- * an H2 in-memory database.
- *
- * <p>Verifies that creating a trip through the service correctly persists the
- * trip in {@link TripRepository} and automatically adds the creating user as
- * an organizer in {@link ParticipantRepository}.</p>
- *
- * <p>Validates Requirements: 4.1, 4.2, 4.6, 4.9</p>
- */
+
 @SpringBootTest
 @Transactional
 @Tag("integration")
@@ -57,7 +48,7 @@ class TripServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Persist a real user that will create the trip
+        
         organizerUser = userRepository.save(Korisnik.builder()
                 .ime("Alice")
                 .prezime("Organizer")
@@ -81,10 +72,10 @@ class TripServiceIntegrationTest {
         @Test
         @DisplayName("createTrip persists trip in TripRepository with all fields populated")
         void createTrip_persistsTripInTripRepository() {
-            // When
+            
             TripResponseDTO created = tripService.createTrip(organizerUser.getKorisnikId(), createTripDTO);
 
-            // Then - response carries persisted state
+            
             assertThat(created).isNotNull();
             assertThat(created.getPutovanjeId()).isNotNull();
             assertThat(created.getNaziv()).isEqualTo("Paris Adventure");
@@ -93,7 +84,7 @@ class TripServiceIntegrationTest {
             assertThat(created.getDatumKraj()).isEqualTo(LocalDate.of(2024, 6, 10));
             assertThat(created.getUkTrosak()).isEqualByComparingTo(BigDecimal.ZERO);
 
-            // Then - trip really exists in TripRepository
+            
             Optional<Putovanje> persistedTrip = tripRepository.findById(created.getPutovanjeId());
             assertThat(persistedTrip).isPresent();
             assertThat(persistedTrip.get().getNaziv()).isEqualTo("Paris Adventure");
@@ -106,10 +97,10 @@ class TripServiceIntegrationTest {
         @Test
         @DisplayName("createTrip generates a non-null trip ID")
         void createTrip_generatesNonNullTripId() {
-            // When
+            
             TripResponseDTO created = tripService.createTrip(organizerUser.getKorisnikId(), createTripDTO);
 
-            // Then
+            
             assertThat(created.getPutovanjeId()).isNotNull();
             assertThat(tripRepository.existsById(created.getPutovanjeId())).isTrue();
         }
@@ -122,10 +113,10 @@ class TripServiceIntegrationTest {
         @Test
         @DisplayName("createTrip adds creator to ParticipantRepository with organizer role")
         void createTrip_addsCreatorAsOrganizerInParticipantRepository() {
-            // When
+            
             TripResponseDTO created = tripService.createTrip(organizerUser.getKorisnikId(), createTripDTO);
 
-            // Then - participant exists for the new trip
+            
             List<Sudionik> participants = participantRepository
                     .findByPutovanje_PutovanjeId(created.getPutovanjeId());
             assertThat(participants).hasSize(1);
@@ -141,10 +132,10 @@ class TripServiceIntegrationTest {
         @Test
         @DisplayName("createTrip results in exactly one organizer for the new trip")
         void createTrip_resultsInExactlyOneOrganizer() {
-            // When
+            
             TripResponseDTO created = tripService.createTrip(organizerUser.getKorisnikId(), createTripDTO);
 
-            // Then
+            
             Long organizerCount = participantRepository
                     .countOrganizersByPutovanjeId(created.getPutovanjeId());
             assertThat(organizerCount).isEqualTo(1L);
@@ -153,10 +144,10 @@ class TripServiceIntegrationTest {
         @Test
         @DisplayName("isUserOrganizer returns true for the creator after createTrip")
         void createTrip_creatorIsRecognizedAsOrganizer() {
-            // When
+            
             TripResponseDTO created = tripService.createTrip(organizerUser.getKorisnikId(), createTripDTO);
 
-            // Then
+            
             assertThat(tripService.isUserOrganizer(created.getPutovanjeId(), organizerUser.getKorisnikId()))
                     .isTrue();
             assertThat(tripService.isUserParticipant(created.getPutovanjeId(), organizerUser.getKorisnikId()))
@@ -166,10 +157,10 @@ class TripServiceIntegrationTest {
         @Test
         @DisplayName("createTrip links the organizer participant to the persisted trip and user")
         void createTrip_organizerParticipantLinksToPersistedTripAndUser() {
-            // When
+            
             TripResponseDTO created = tripService.createTrip(organizerUser.getKorisnikId(), createTripDTO);
 
-            // Then
+            
             Optional<Sudionik> organizerParticipant = participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(
                             created.getPutovanjeId(), organizerUser.getKorisnikId());
@@ -191,7 +182,7 @@ class TripServiceIntegrationTest {
         @Test
         @DisplayName("each createTrip call persists a separate trip and organizer entry")
         void createMultipleTrips_eachPersistedIndependently() {
-            // Given
+            
             CreateTripDTO secondTrip = CreateTripDTO.builder()
                     .naziv("Rome Adventure")
                     .opis("Historical tour")
@@ -199,16 +190,16 @@ class TripServiceIntegrationTest {
                     .datumKraj(LocalDate.of(2024, 8, 5))
                     .build();
 
-            // When
+            
             TripResponseDTO trip1 = tripService.createTrip(organizerUser.getKorisnikId(), createTripDTO);
             TripResponseDTO trip2 = tripService.createTrip(organizerUser.getKorisnikId(), secondTrip);
 
-            // Then - both trips are persisted with unique IDs
+            
             assertThat(trip1.getPutovanjeId()).isNotEqualTo(trip2.getPutovanjeId());
             assertThat(tripRepository.findById(trip1.getPutovanjeId())).isPresent();
             assertThat(tripRepository.findById(trip2.getPutovanjeId())).isPresent();
 
-            // Then - each trip has its own organizer participant
+            
             assertThat(participantRepository.countOrganizersByPutovanjeId(trip1.getPutovanjeId()))
                     .isEqualTo(1L);
             assertThat(participantRepository.countOrganizersByPutovanjeId(trip2.getPutovanjeId()))

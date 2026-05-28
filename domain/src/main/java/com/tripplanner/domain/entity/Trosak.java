@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-/**
- * Entity representing an expense (Trosak) for a trip.
- */
+
 @Entity
 @Table(name = "TROSAK")
 @Data

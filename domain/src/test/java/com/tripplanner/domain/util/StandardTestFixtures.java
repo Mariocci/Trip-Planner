@@ -6,13 +6,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Provides pre-configured test data fixtures for common testing scenarios.
- * These fixtures can be used across different test classes to ensure consistency.
- */
+
 public class StandardTestFixtures {
 
-    // User Fixtures
+    
     public static final Korisnik ORGANIZER_USER = TestDataBuilder.user()
             .withId(1)
             .withName("Alice", "Organizer")
@@ -34,7 +31,7 @@ public class StandardTestFixtures {
             .withOAuthProvider("google", "google-charlie-789")
             .build();
 
-    // Trip Fixtures
+    
     public static final Putovanje STANDARD_TRIP = TestDataBuilder.trip()
             .withId(1)
             .withName("Paris Adventure")
@@ -67,7 +64,7 @@ public class StandardTestFixtures {
             .withTotalExpense(new BigDecimal("800.00"))
             .build();
 
-    // Location Fixtures
+    
     public static final Lokacija EIFFEL_TOWER = TestDataBuilder.location()
             .withId(1)
             .withName("Eiffel Tower")
@@ -92,7 +89,7 @@ public class StandardTestFixtures {
             .withCountry("Italy")
             .build();
 
-    // Category Fixtures
+    
     public static final Kategorija SIGHTSEEING_CATEGORY = TestDataBuilder.category()
             .withId(1)
             .withName("Sightseeing")
@@ -117,7 +114,7 @@ public class StandardTestFixtures {
             .withDescription("Shopping and markets")
             .build();
 
-    // Activity Fixtures
+    
     public static final Aktivnost STANDARD_ACTIVITY = TestDataBuilder.activity()
             .withId(1)
             .withName("Visit Eiffel Tower")
@@ -142,7 +139,7 @@ public class StandardTestFixtures {
             .withLocation(LOUVRE_MUSEUM)
             .build();
 
-    // Expense Fixtures
+    
     public static final Trosak STANDARD_EXPENSE = TestDataBuilder.expense()
             .withId(1)
             .withAmount("100.00")
@@ -167,7 +164,7 @@ public class StandardTestFixtures {
             .withTrip(STANDARD_TRIP)
             .build();
 
-    // Participant Fixtures
+    
     public static final Sudionik ORGANIZER_PARTICIPANT = TestDataBuilder.participant()
             .withId(1)
             .asOrganizer()
@@ -182,13 +179,7 @@ public class StandardTestFixtures {
             .withUser(PARTICIPANT_USER)
             .build();
 
-    /**
-     * Create a copy of ORGANIZER_USER with a different ID.
-     * Useful for tests that need multiple distinct users.
-     *
-     * @param id New user ID
-     * @return Korisnik entity
-     */
+    
     public static Korisnik createOrganizerUser(Integer id) {
         return TestDataBuilder.user()
                 .withId(id)
@@ -198,13 +189,7 @@ public class StandardTestFixtures {
                 .build();
     }
 
-    /**
-     * Create a copy of PARTICIPANT_USER with a different ID.
-     * Useful for tests that need multiple distinct users.
-     *
-     * @param id New user ID
-     * @return Korisnik entity
-     */
+    
     public static Korisnik createParticipantUser(Integer id) {
         return TestDataBuilder.user()
                 .withId(id)
@@ -214,13 +199,7 @@ public class StandardTestFixtures {
                 .build();
     }
 
-    /**
-     * Create a copy of STANDARD_TRIP with a different ID.
-     * Useful for tests that need multiple distinct trips.
-     *
-     * @param id New trip ID
-     * @return Putovanje entity
-     */
+    
     public static Putovanje createStandardTrip(Integer id) {
         return TestDataBuilder.trip()
                 .withId(id)
@@ -231,15 +210,7 @@ public class StandardTestFixtures {
                 .build();
     }
 
-    /**
-     * Create a copy of STANDARD_EXPENSE with a different ID and amount.
-     * Useful for tests that need multiple distinct expenses.
-     *
-     * @param id     New expense ID
-     * @param amount Expense amount
-     * @param trip   Associated trip
-     * @return Trosak entity
-     */
+    
     public static Trosak createExpense(Integer id, String amount, Putovanje trip) {
         return TestDataBuilder.expense()
                 .withId(id)
@@ -250,15 +221,7 @@ public class StandardTestFixtures {
                 .build();
     }
 
-    /**
-     * Create a copy of STANDARD_ACTIVITY with a different ID.
-     * Useful for tests that need multiple distinct activities.
-     *
-     * @param id       New activity ID
-     * @param trip     Associated trip
-     * @param location Associated location
-     * @return Aktivnost entity
-     */
+    
     public static Aktivnost createActivity(Integer id, Putovanje trip, Lokacija location) {
         return TestDataBuilder.activity()
                 .withId(id)
@@ -273,15 +236,7 @@ public class StandardTestFixtures {
                 .build();
     }
 
-    /**
-     * Create a participant with custom values.
-     *
-     * @param id   Participant ID
-     * @param trip Associated trip
-     * @param user Associated user
-     * @param role Participant role
-     * @return Sudionik entity
-     */
+    
     public static Sudionik createParticipant(Integer id, Putovanje trip, Korisnik user, String role) {
         return TestDataBuilder.participant()
                 .withId(id)

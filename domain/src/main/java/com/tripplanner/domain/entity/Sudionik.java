@@ -6,9 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Entity representing a participant (Sudionik) in a trip.
- */
+
 @Entity
 @Table(name = "SUDIONIK")
 @Data

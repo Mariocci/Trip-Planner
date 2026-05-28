@@ -12,9 +12,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Entity representing a trip (Putovanje).
- */
+
 @Entity
 @Table(name = "PUTOVANJE")
 @Data

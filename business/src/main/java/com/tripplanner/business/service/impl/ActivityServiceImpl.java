@@ -22,9 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of {@link ActivityService}.
- */
+
 @Service
 @Transactional
 public class ActivityServiceImpl implements ActivityService {

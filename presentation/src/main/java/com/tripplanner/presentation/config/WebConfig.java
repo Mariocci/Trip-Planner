@@ -4,10 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * Web configuration for CORS settings.
- * Allows the frontend application to communicate with the backend API.
- */
+
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 

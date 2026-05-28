@@ -33,11 +33,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for {@link ActivityServiceImpl}.
- * Tests activity creation, updates, deletion, retrieval with mocked repositories.
- * Validates: Requirements 2.3, 2.9, 2.10, 2.11, 2.13, 2.14, 2.15
- */
+
 class ActivityServiceImplTest extends ServiceTestBase {
 
     @Mock
@@ -73,7 +69,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
         userId = 1;
         tripId = 1;
 
-        // Create test entities
+        
         testTrip = createTestTrip();
         testLocation = createTestLocation();
         testCategory1 = createTestCategory(1, "Sightseeing");
@@ -82,7 +78,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
         testActivity = createTestActivity(testTrip, testLocation);
         testActivity.setCategories(new ArrayList<>(Arrays.asList(testCategory1)));
 
-        // Create test DTOs
+        
         createActivityDTO = CreateActivityDTO.builder()
                 .naziv("Museum Visit")
                 .opis("Visit the Louvre Museum")
@@ -98,21 +94,21 @@ class ActivityServiceImplTest extends ServiceTestBase {
                 .build();
     }
 
-    // ==================== CREATE ACTIVITY TESTS ====================
+    
 
     @Test
     void createActivity_withValidData_createsActivitySuccessfully() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(true);
         when(tripRepository.findById(tripId)).thenReturn(Optional.of(testTrip));
         when(locationRepository.findById(testLocation.getLokacijaId())).thenReturn(Optional.of(testLocation));
         when(categoryRepository.findAllById(anyList())).thenReturn(Arrays.asList(testCategory1));
         when(activityRepository.save(any(Aktivnost.class))).thenReturn(testActivity);
 
-        // When
+        
         ActivityResponseDTO result = activityService.createActivity(tripId, userId, createActivityDTO);
 
-        // Then
+        
         assertThat(result).isNotNull();
         assertThat(result.getNaziv()).isEqualTo(testActivity.getNaziv());
         assertThat(result.getOpis()).isEqualTo(testActivity.getOpis());
@@ -129,7 +125,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void createActivity_withLocationAndCategoryAssociations_associatesCorrectly() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(true);
         when(tripRepository.findById(tripId)).thenReturn(Optional.of(testTrip));
         when(locationRepository.findById(testLocation.getLokacijaId())).thenReturn(Optional.of(testLocation));
@@ -140,10 +136,10 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
         createActivityDTO.setCategoryIds(Arrays.asList(1, 2));
 
-        // When
+        
         activityService.createActivity(tripId, userId, createActivityDTO);
 
-        // Then
+        
         Aktivnost savedActivity = activityCaptor.getValue();
         assertThat(savedActivity.getLokacija()).isEqualTo(testLocation);
         assertThat(savedActivity.getCategories()).hasSize(2);
@@ -155,7 +151,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void createActivity_withNoCategoryIds_createsActivityWithEmptyCategories() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(true);
         when(tripRepository.findById(tripId)).thenReturn(Optional.of(testTrip));
         when(locationRepository.findById(testLocation.getLokacijaId())).thenReturn(Optional.of(testLocation));
@@ -165,10 +161,10 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
         createActivityDTO.setCategoryIds(null);
 
-        // When
+        
         activityService.createActivity(tripId, userId, createActivityDTO);
 
-        // Then
+        
         Aktivnost savedActivity = activityCaptor.getValue();
         assertThat(savedActivity.getCategories()).isEmpty();
 
@@ -177,7 +173,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void createActivity_withEmptyCategoryIds_createsActivityWithEmptyCategories() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(true);
         when(tripRepository.findById(tripId)).thenReturn(Optional.of(testTrip));
         when(locationRepository.findById(testLocation.getLokacijaId())).thenReturn(Optional.of(testLocation));
@@ -187,10 +183,10 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
         createActivityDTO.setCategoryIds(Collections.emptyList());
 
-        // When
+        
         activityService.createActivity(tripId, userId, createActivityDTO);
 
-        // Then
+        
         Aktivnost savedActivity = activityCaptor.getValue();
         assertThat(savedActivity.getCategories()).isEmpty();
 
@@ -199,10 +195,10 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void createActivity_whenUserNotParticipant_throwsException() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(false);
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.createActivity(tripId, userId, createActivityDTO))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Access denied: User is not a participant of this trip");
@@ -214,13 +210,13 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void createActivity_whenEndDateTimeBeforeStartDateTime_throwsException() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(true);
         
         createActivityDTO.setDatumVrijemePoc(LocalDateTime.now().plusDays(2));
-        createActivityDTO.setDatumVrijemeKraj(LocalDateTime.now().plusDays(1)); // Before start
+        createActivityDTO.setDatumVrijemeKraj(LocalDateTime.now().plusDays(1)); 
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.createActivity(tripId, userId, createActivityDTO))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("End datetime must be after start datetime");
@@ -231,11 +227,11 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void createActivity_whenTripNotFound_throwsException() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(true);
         when(tripRepository.findById(tripId)).thenReturn(Optional.empty());
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.createActivity(tripId, userId, createActivityDTO))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Trip not found");
@@ -246,12 +242,12 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void createActivity_whenLocationNotFound_throwsException() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(true);
         when(tripRepository.findById(tripId)).thenReturn(Optional.of(testTrip));
         when(locationRepository.findById(testLocation.getLokacijaId())).thenReturn(Optional.empty());
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.createActivity(tripId, userId, createActivityDTO))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Location not found");
@@ -260,19 +256,19 @@ class ActivityServiceImplTest extends ServiceTestBase {
         verify(activityRepository, never()).save(any(Aktivnost.class));
     }
 
-    // ==================== GET ACTIVITY TESTS ====================
+    
 
     @Test
     void getActivityById_withValidId_returnsActivity() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
         when(tripService.isUserParticipant(testTrip.getPutovanjeId(), userId)).thenReturn(true);
 
-        // When
+        
         ActivityResponseDTO result = activityService.getActivityById(activityId, userId);
 
-        // Then
+        
         assertThat(result).isNotNull();
         assertThat(result.getAktivnostId()).isEqualTo(activityId);
         assertThat(result.getNaziv()).isEqualTo(testActivity.getNaziv());
@@ -284,11 +280,11 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void getActivityById_whenActivityNotFound_throwsException() {
-        // Given
+        
         Integer activityId = 999;
         when(activityRepository.findById(activityId)).thenReturn(Optional.empty());
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.getActivityById(activityId, userId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Activity not found");
@@ -299,12 +295,12 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void getActivityById_whenUserNotParticipant_throwsException() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
         when(tripService.isUserParticipant(testTrip.getPutovanjeId(), userId)).thenReturn(false);
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.getActivityById(activityId, userId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Access denied: User is not a participant of this trip");
@@ -313,11 +309,11 @@ class ActivityServiceImplTest extends ServiceTestBase {
         verify(tripService).isUserParticipant(testTrip.getPutovanjeId(), userId);
     }
 
-    // ==================== LIST TRIP ACTIVITIES TESTS ====================
+    
 
     @Test
     void listTripActivities_withValidTripId_returnsActivities() {
-        // Given
+        
         Aktivnost activity2 = createTestActivity(2, "Second Activity", testTrip, testLocation,
                 LocalDateTime.now().plusDays(3), LocalDateTime.now().plusDays(3).plusHours(2));
         activity2.setCategories(new ArrayList<>());
@@ -326,10 +322,10 @@ class ActivityServiceImplTest extends ServiceTestBase {
         when(activityRepository.findByPutovanje_PutovanjeIdOrderByDatumVrijemePoc(tripId))
                 .thenReturn(Arrays.asList(testActivity, activity2));
 
-        // When
+        
         List<ActivityResponseDTO> result = activityService.listTripActivities(tripId, userId);
 
-        // Then
+        
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getAktivnostId()).isEqualTo(testActivity.getAktivnostId());
         assertThat(result.get(1).getAktivnostId()).isEqualTo(activity2.getAktivnostId());
@@ -340,15 +336,15 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void listTripActivities_whenNoActivities_returnsEmptyList() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(true);
         when(activityRepository.findByPutovanje_PutovanjeIdOrderByDatumVrijemePoc(tripId))
                 .thenReturn(Collections.emptyList());
 
-        // When
+        
         List<ActivityResponseDTO> result = activityService.listTripActivities(tripId, userId);
 
-        // Then
+        
         assertThat(result).isEmpty();
 
         verify(tripService).isUserParticipant(tripId, userId);
@@ -357,10 +353,10 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void listTripActivities_whenUserNotParticipant_throwsException() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(false);
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.listTripActivities(tripId, userId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Access denied: User is not a participant of this trip");
@@ -369,20 +365,20 @@ class ActivityServiceImplTest extends ServiceTestBase {
         verify(activityRepository, never()).findByPutovanje_PutovanjeIdOrderByDatumVrijemePoc(anyInt());
     }
 
-    // ==================== UPDATE ACTIVITY TESTS ====================
+    
 
     @Test
     void updateActivity_withValidData_updatesActivitySuccessfully() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
         when(tripService.isUserParticipant(testTrip.getPutovanjeId(), userId)).thenReturn(true);
         when(activityRepository.save(any(Aktivnost.class))).thenReturn(testActivity);
 
-        // When
+        
         ActivityResponseDTO result = activityService.updateActivity(activityId, userId, updateActivityDTO);
 
-        // Then
+        
         assertThat(result).isNotNull();
         verify(activityRepository).findById(activityId);
         verify(tripService).isUserParticipant(testTrip.getPutovanjeId(), userId);
@@ -391,7 +387,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void updateActivity_withAllFields_updatesAllFields() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         Lokacija newLocation = createTestLocation(2, "New Location", "456 New St", "New City", "New Country");
         
@@ -408,10 +404,10 @@ class ActivityServiceImplTest extends ServiceTestBase {
         when(categoryRepository.findAllById(anyList())).thenReturn(Arrays.asList(testCategory1, testCategory2));
         when(activityRepository.save(any(Aktivnost.class))).thenReturn(testActivity);
 
-        // When
+        
         activityService.updateActivity(activityId, userId, updateActivityDTO);
 
-        // Then
+        
         assertThat(testActivity.getNaziv()).isEqualTo("Updated Name");
         assertThat(testActivity.getOpis()).isEqualTo("Updated Description");
         assertThat(testActivity.getLokacija()).isEqualTo(newLocation);
@@ -424,7 +420,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void updateActivity_withPartialFields_updatesOnlyProvidedFields() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         String originalOpis = testActivity.getOpis();
         
@@ -436,12 +432,12 @@ class ActivityServiceImplTest extends ServiceTestBase {
         when(tripService.isUserParticipant(testTrip.getPutovanjeId(), userId)).thenReturn(true);
         when(activityRepository.save(any(Aktivnost.class))).thenReturn(testActivity);
 
-        // When
+        
         activityService.updateActivity(activityId, userId, partialUpdate);
 
-        // Then
+        
         assertThat(testActivity.getNaziv()).isEqualTo("Only Name Updated");
-        assertThat(testActivity.getOpis()).isEqualTo(originalOpis); // Unchanged
+        assertThat(testActivity.getOpis()).isEqualTo(originalOpis); 
 
         verify(locationRepository, never()).findById(anyInt());
         verify(categoryRepository, never()).findAllById(anyList());
@@ -449,16 +445,16 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void updateActivity_whenEndDateTimeBeforeStartDateTime_throwsException() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         
         updateActivityDTO.setDatumVrijemePoc(LocalDateTime.now().plusDays(5));
-        updateActivityDTO.setDatumVrijemeKraj(LocalDateTime.now().plusDays(4)); // Before start
+        updateActivityDTO.setDatumVrijemeKraj(LocalDateTime.now().plusDays(4)); 
 
         when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
         when(tripService.isUserParticipant(testTrip.getPutovanjeId(), userId)).thenReturn(true);
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.updateActivity(activityId, userId, updateActivityDTO))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("End datetime must be after start datetime");
@@ -468,11 +464,11 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void updateActivity_whenActivityNotFound_throwsException() {
-        // Given
+        
         Integer activityId = 999;
         when(activityRepository.findById(activityId)).thenReturn(Optional.empty());
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.updateActivity(activityId, userId, updateActivityDTO))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Activity not found");
@@ -483,12 +479,12 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void updateActivity_whenUserNotParticipant_throwsException() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
         when(tripService.isUserParticipant(testTrip.getPutovanjeId(), userId)).thenReturn(false);
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.updateActivity(activityId, userId, updateActivityDTO))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Access denied: User is not a participant of this trip");
@@ -498,7 +494,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void updateActivity_whenLocationNotFound_throwsException() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         updateActivityDTO.setLokacijaId(999);
 
@@ -506,7 +502,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
         when(tripService.isUserParticipant(testTrip.getPutovanjeId(), userId)).thenReturn(true);
         when(locationRepository.findById(999)).thenReturn(Optional.empty());
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.updateActivity(activityId, userId, updateActivityDTO))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Location not found");
@@ -515,19 +511,19 @@ class ActivityServiceImplTest extends ServiceTestBase {
         verify(activityRepository, never()).save(any(Aktivnost.class));
     }
 
-    // ==================== DELETE ACTIVITY TESTS ====================
+    
 
     @Test
     void deleteActivity_withValidId_deletesActivitySuccessfully() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
         when(tripService.isUserParticipant(testTrip.getPutovanjeId(), userId)).thenReturn(true);
 
-        // When
+        
         activityService.deleteActivity(activityId, userId);
 
-        // Then
+        
         verify(activityRepository).findById(activityId);
         verify(tripService).isUserParticipant(testTrip.getPutovanjeId(), userId);
         verify(activityRepository).delete(testActivity);
@@ -535,11 +531,11 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void deleteActivity_whenActivityNotFound_throwsException() {
-        // Given
+        
         Integer activityId = 999;
         when(activityRepository.findById(activityId)).thenReturn(Optional.empty());
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.deleteActivity(activityId, userId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Activity not found");
@@ -550,12 +546,12 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void deleteActivity_whenUserNotParticipant_throwsException() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
         when(tripService.isUserParticipant(testTrip.getPutovanjeId(), userId)).thenReturn(false);
 
-        // When/Then
+        
         assertThatThrownBy(() -> activityService.deleteActivity(activityId, userId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Access denied: User is not a participant of this trip");
@@ -564,21 +560,21 @@ class ActivityServiceImplTest extends ServiceTestBase {
         verify(activityRepository, never()).delete(any(Aktivnost.class));
     }
 
-    // ==================== MOCK INTERACTION VERIFICATION TESTS ====================
+    
 
     @Test
     void createActivity_verifiesAllRepositoryInteractions() {
-        // Given
+        
         when(tripService.isUserParticipant(tripId, userId)).thenReturn(true);
         when(tripRepository.findById(tripId)).thenReturn(Optional.of(testTrip));
         when(locationRepository.findById(testLocation.getLokacijaId())).thenReturn(Optional.of(testLocation));
         when(categoryRepository.findAllById(anyList())).thenReturn(Arrays.asList(testCategory1));
         when(activityRepository.save(any(Aktivnost.class))).thenReturn(testActivity);
 
-        // When
+        
         activityService.createActivity(tripId, userId, createActivityDTO);
 
-        // Then - Verify exact interactions
+        
         verify(tripService, times(1)).isUserParticipant(tripId, userId);
         verify(tripRepository, times(1)).findById(tripId);
         verify(locationRepository, times(1)).findById(testLocation.getLokacijaId());
@@ -590,7 +586,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void updateActivity_verifiesRepositoryInteractionsForLocationUpdate() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         Lokacija newLocation = createTestLocation(2, "New Location", "456 New St", "New City", "New Country");
         updateActivityDTO.setLokacijaId(newLocation.getLokacijaId());
@@ -600,10 +596,10 @@ class ActivityServiceImplTest extends ServiceTestBase {
         when(locationRepository.findById(newLocation.getLokacijaId())).thenReturn(Optional.of(newLocation));
         when(activityRepository.save(any(Aktivnost.class))).thenReturn(testActivity);
 
-        // When
+        
         activityService.updateActivity(activityId, userId, updateActivityDTO);
 
-        // Then
+        
         verify(activityRepository, times(1)).findById(activityId);
         verify(tripService, times(1)).isUserParticipant(testTrip.getPutovanjeId(), userId);
         verify(locationRepository, times(1)).findById(newLocation.getLokacijaId());
@@ -614,7 +610,7 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void updateActivity_verifiesRepositoryInteractionsForCategoryUpdate() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         updateActivityDTO.setCategoryIds(Arrays.asList(1, 2));
 
@@ -623,10 +619,10 @@ class ActivityServiceImplTest extends ServiceTestBase {
         when(categoryRepository.findAllById(anyList())).thenReturn(Arrays.asList(testCategory1, testCategory2));
         when(activityRepository.save(any(Aktivnost.class))).thenReturn(testActivity);
 
-        // When
+        
         activityService.updateActivity(activityId, userId, updateActivityDTO);
 
-        // Then
+        
         verify(activityRepository, times(1)).findById(activityId);
         verify(tripService, times(1)).isUserParticipant(testTrip.getPutovanjeId(), userId);
         verify(categoryRepository, times(1)).findAllById(Arrays.asList(1, 2));
@@ -637,15 +633,15 @@ class ActivityServiceImplTest extends ServiceTestBase {
 
     @Test
     void deleteActivity_verifiesAllRepositoryInteractions() {
-        // Given
+        
         Integer activityId = testActivity.getAktivnostId();
         when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
         when(tripService.isUserParticipant(testTrip.getPutovanjeId(), userId)).thenReturn(true);
 
-        // When
+        
         activityService.deleteActivity(activityId, userId);
 
-        // Then
+        
         verify(activityRepository, times(1)).findById(activityId);
         verify(tripService, times(1)).isUserParticipant(testTrip.getPutovanjeId(), userId);
         verify(activityRepository, times(1)).delete(testActivity);

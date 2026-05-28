@@ -21,11 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for {@link GooglePlacesServiceImpl}.
- * 
- * **Validates: Requirements 2.8, 2.9, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7**
- */
+
 @ExtendWith(MockitoExtension.class)
 class GooglePlacesServiceImplTest {
 
@@ -45,7 +41,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithValidQuery_ShouldReturnParsedLocations() {
-        // Given
+        
         String query = "Paris, France";
         String mockResponse = """
             {
@@ -72,10 +68,10 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         List<Map<String, Object>> results = googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         assertThat(results).isNotNull();
         assertThat(results).hasSize(1);
         
@@ -93,7 +89,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithMultipleResults_ShouldReturnAllParsedLocations() {
-        // Given
+        
         String query = "Zagreb";
         String mockResponse = """
             {
@@ -131,10 +127,10 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         List<Map<String, Object>> results = googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         assertThat(results).isNotNull();
         assertThat(results).hasSize(2);
         assertThat(results.get(0).get("name")).isEqualTo("Zagreb");
@@ -143,7 +139,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_ShouldSortCitiesFirst() {
-        // Given
+        
         String query = "New York";
         String mockResponse = """
             {
@@ -181,20 +177,20 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         List<Map<String, Object>> results = googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         assertThat(results).isNotNull();
         assertThat(results).hasSize(2);
-        // City should be sorted first
+        
         assertThat(results.get(0).get("name")).isEqualTo("New York");
         assertThat(results.get(1).get("name")).isEqualTo("New York Hotel");
     }
 
     @Test
     void searchPlaces_WithEmptyResults_ShouldReturnEmptyList() {
-        // Given
+        
         String query = "NonExistentPlace12345";
         String mockResponse = """
             {
@@ -209,17 +205,17 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         List<Map<String, Object>> results = googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         assertThat(results).isNotNull();
         assertThat(results).isEmpty();
     }
 
     @Test
     void searchPlaces_WithNoPlacesField_ShouldReturnEmptyList() {
-        // Given
+        
         String query = "Test";
         String mockResponse = """
             {
@@ -234,17 +230,17 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         List<Map<String, Object>> results = googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         assertThat(results).isNotNull();
         assertThat(results).isEmpty();
     }
 
     @Test
     void searchPlaces_ShouldFormatRequestCorrectly() {
-        // Given
+        
         String query = "London";
         String mockResponse = """
             {
@@ -262,10 +258,10 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         String capturedUrl = urlCaptor.getValue();
         assertThat(capturedUrl).isEqualTo("https://places.googleapis.com/v1/places:searchText");
 
@@ -285,7 +281,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithNetworkError_ShouldThrowRuntimeException() {
-        // Given
+        
         String query = "Paris";
         when(restTemplate.exchange(
                 anyString(),
@@ -294,7 +290,7 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenThrow(new ResourceAccessException("Connection timeout"));
 
-        // When/Then
+        
         assertThatThrownBy(() -> googlePlacesService.searchPlaces(query))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Failed to search places")
@@ -303,7 +299,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithInvalidApiKey_ShouldThrowRuntimeException() {
-        // Given
+        
         String query = "Paris";
         when(restTemplate.exchange(
                 anyString(),
@@ -312,7 +308,7 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Invalid API key"));
 
-        // When/Then
+        
         assertThatThrownBy(() -> googlePlacesService.searchPlaces(query))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Failed to search places")
@@ -321,7 +317,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithRateLimiting_ShouldThrowRuntimeException() {
-        // Given
+        
         String query = "Paris";
         when(restTemplate.exchange(
                 anyString(),
@@ -330,7 +326,7 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenThrow(new HttpClientErrorException(HttpStatus.TOO_MANY_REQUESTS, "Rate limit exceeded"));
 
-        // When/Then
+        
         assertThatThrownBy(() -> googlePlacesService.searchPlaces(query))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Failed to search places")
@@ -339,7 +335,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithServerError_ShouldThrowRuntimeException() {
-        // Given
+        
         String query = "Paris";
         when(restTemplate.exchange(
                 anyString(),
@@ -348,7 +344,7 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Server error"));
 
-        // When/Then
+        
         assertThatThrownBy(() -> googlePlacesService.searchPlaces(query))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Failed to search places")
@@ -357,7 +353,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithMalformedResponse_ShouldThrowRuntimeException() {
-        // Given
+        
         String query = "Paris";
         String malformedResponse = "{ invalid json }";
 
@@ -368,7 +364,7 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(malformedResponse, HttpStatus.OK));
 
-        // When/Then
+        
         assertThatThrownBy(() -> googlePlacesService.searchPlaces(query))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Failed to parse places response");
@@ -376,7 +372,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithPartialData_ShouldHandleGracefully() {
-        // Given
+        
         String query = "Test";
         String mockResponse = """
             {
@@ -408,19 +404,19 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         List<Map<String, Object>> results = googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         assertThat(results).isNotNull();
         assertThat(results).hasSize(2);
         
-        // First place has name but no address
+        
         assertThat(results.get(0).get("name")).isEqualTo("Place Without Address");
         assertThat(results.get(0).get("address")).isNull();
         assertThat(results.get(0).get("latitude")).isEqualTo(45.0);
         
-        // Second place has address but no name
+        
         assertThat(results.get(1).get("name")).isNull();
         assertThat(results.get(1).get("address")).isEqualTo("Address Without Name");
         assertThat(results.get(1).get("latitude")).isEqualTo(46.0);
@@ -428,7 +424,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithAllFieldsPresent_ShouldParseAllFields() {
-        // Given
+        
         String query = "Complete Place";
         String mockResponse = """
             {
@@ -455,10 +451,10 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         List<Map<String, Object>> results = googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         assertThat(results).isNotNull();
         assertThat(results).hasSize(1);
         
@@ -476,7 +472,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_ShouldVerifyRestTemplateInteraction() {
-        // Given
+        
         String query = "Test Query";
         String mockResponse = """
             {
@@ -491,10 +487,10 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         verify(restTemplate, times(1)).exchange(
                 anyString(),
                 eq(HttpMethod.POST),
@@ -506,7 +502,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithNullLocation_ShouldHandleGracefully() {
-        // Given
+        
         String query = "Test";
         String mockResponse = """
             {
@@ -528,10 +524,10 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         List<Map<String, Object>> results = googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         assertThat(results).isNotNull();
         assertThat(results).hasSize(1);
         assertThat(results.get(0).get("name")).isEqualTo("Place Without Location");
@@ -541,7 +537,7 @@ class GooglePlacesServiceImplTest {
 
     @Test
     void searchPlaces_WithEmptyTypes_ShouldHandleGracefully() {
-        // Given
+        
         String query = "Test";
         String mockResponse = """
             {
@@ -568,10 +564,10 @@ class GooglePlacesServiceImplTest {
                 eq(String.class)
         )).thenReturn(new ResponseEntity<>(mockResponse, HttpStatus.OK));
 
-        // When
+        
         List<Map<String, Object>> results = googlePlacesService.searchPlaces(query);
 
-        // Then
+        
         assertThat(results).isNotNull();
         assertThat(results).hasSize(1);
         

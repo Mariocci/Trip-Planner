@@ -37,23 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Unit tests for {@link PlacesController}.
- *
- * <p>Tests the controller in isolation by mocking {@link GooglePlacesService}.
- * Exercises HTTP request/response handling, status codes, JSON serialization,
- * and error propagation through the global exception handler.</p>
- *
- * <p>Security filters are disabled for these tests so the controller logic
- * can be verified without needing a valid JWT token.</p>
- *
- * <p><strong>Note:</strong> The current {@link PlacesController} implementation
- * only exposes the {@code GET /api/places/search} endpoint. The
- * {@code GET /api/places/{placeId}} endpoint mentioned in the spec/design
- * is not yet implemented in production code, so it is not covered here.</p>
- *
- * <p>Validates: Requirements 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 7.8</p>
- */
+
 @WebMvcTest(
         controllers = PlacesController.class,
         excludeAutoConfiguration = {
@@ -103,10 +87,10 @@ class PlacesControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("searchPlaces_withValidQuery_returns200OkWithResults")
         void searchPlaces_withValidQuery_returns200OkWithResults() throws Exception {
-            // Given
+            
             when(googlePlacesService.searchPlaces("Paris")).thenReturn(sampleResults);
 
-            // When/Then - HTTP 200 OK with serialized list of places
+            
             performGet("/api/places/search?query=Paris")
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith("application/json"))
@@ -120,17 +104,17 @@ class PlacesControllerTest extends ControllerTestBase {
                     .andExpect(jsonPath("$[1].name").value("Eiffel Tower"))
                     .andExpect(jsonPath("$[1].latitude").value(48.8584));
 
-            // Verify the service was called exactly once with the expected query
+            
             verify(googlePlacesService, times(1)).searchPlaces("Paris");
         }
 
         @Test
         @DisplayName("searchPlaces_withEmptyResults_returns200OkWithEmptyArray")
         void searchPlaces_withEmptyResults_returns200OkWithEmptyArray() throws Exception {
-            // Given
+            
             when(googlePlacesService.searchPlaces(anyString())).thenReturn(new ArrayList<>());
 
-            // When/Then
+            
             performGet("/api/places/search?query=NonExistentPlace12345")
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray())
@@ -142,24 +126,24 @@ class PlacesControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("searchPlaces_withMissingQueryParam_returns400BadRequest")
         void searchPlaces_withMissingQueryParam_returns400BadRequest() throws Exception {
-            // When/Then - missing required @RequestParam triggers a 400 via the
-            // GlobalExceptionHandler (MissingServletRequestParameterException is
-            // a RuntimeException, mapped by the handler).
+            
+            
+            
             performGet("/api/places/search")
                     .andExpect(status().is4xxClientError());
 
-            // Service must not be invoked when request validation fails
+            
             verifyNoInteractions(googlePlacesService);
         }
 
         @Test
         @DisplayName("searchPlaces_whenServiceThrowsRuntimeException_returns500InternalServerError")
         void searchPlaces_whenServiceThrowsRuntimeException_returns500InternalServerError() throws Exception {
-            // Given - simulate API failure (network error, invalid API key, rate limit, etc.)
+            
             when(googlePlacesService.searchPlaces(anyString()))
                     .thenThrow(new RuntimeException("Failed to search places: connection timeout"));
 
-            // When/Then - GlobalExceptionHandler maps RuntimeException to 500
+            
             performGet("/api/places/search?query=Tokyo")
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.status").value(500))
@@ -172,12 +156,12 @@ class PlacesControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("searchPlaces_whenServiceThrowsIllegalArgument_returns400BadRequest")
         void searchPlaces_whenServiceThrowsIllegalArgument_returns400BadRequest() throws Exception {
-            // Given - service rejects invalid input
+            
             when(googlePlacesService.searchPlaces(anyString()))
                     .thenThrow(new IllegalArgumentException("Query must not be blank"));
 
-            // When/Then - GlobalExceptionHandler maps IllegalArgumentException to 400
-            // Use .param() so MockMvc passes the raw value (a single space) without URL decoding it twice
+            
+            
             mockMvc.perform(get("/api/places/search").param("query", " "))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.status").value(400))
@@ -189,21 +173,21 @@ class PlacesControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("searchPlaces_passesQueryParameterToServiceUnchanged")
         void searchPlaces_passesQueryParameterToServiceUnchanged() throws Exception {
-            // Given - multi-word query passed via .param() to avoid double-encoding issues
+            
             when(googlePlacesService.searchPlaces("New York City")).thenReturn(sampleResults);
 
-            // When
+            
             mockMvc.perform(get("/api/places/search").param("query", "New York City"))
                     .andExpect(status().isOk());
 
-            // Then - controller forwards the query verbatim
+            
             verify(googlePlacesService).searchPlaces(eq("New York City"));
         }
 
         @Test
         @DisplayName("searchPlaces_returnsResultsFromServiceWithoutModification")
         void searchPlaces_returnsResultsFromServiceWithoutModification() throws Exception {
-            // Given - service returns a single place with all expected fields
+            
             Map<String, Object> single = new HashMap<>();
             single.put("name", "Tokyo");
             single.put("address", "Tokyo, Japan");
@@ -212,7 +196,7 @@ class PlacesControllerTest extends ControllerTestBase {
             single.put("types", Arrays.asList("locality"));
             when(googlePlacesService.searchPlaces("Tokyo")).thenReturn(List.of(single));
 
-            // When/Then - response payload exactly mirrors the service output
+            
             performGet("/api/places/search?query=Tokyo")
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(1)))
@@ -228,11 +212,11 @@ class PlacesControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("searchPlaces_withWrongHttpMethod_returns405MethodNotAllowed")
         void searchPlaces_withWrongHttpMethod_returns405MethodNotAllowed() throws Exception {
-            // When/Then - POST is not mapped on /api/places/search
+            
             performPost("/api/places/search?query=Paris", new HashMap<>())
                     .andExpect(status().isMethodNotAllowed());
 
-            // Service must not be called for unsupported methods
+            
             verify(googlePlacesService, never()).searchPlaces(any());
         }
     }

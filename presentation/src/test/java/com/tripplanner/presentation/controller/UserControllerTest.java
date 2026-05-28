@@ -33,36 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Unit tests for user-related controller endpoints with a mocked
- * {@link UserService}.
- *
- * <p><strong>Implementation note:</strong> The spec/design references a
- * dedicated {@code UserController} exposing {@code GET/PUT/DELETE
- * /api/users/{id}}, but no such controller exists in the current code base.
- * The only user-management endpoint that talks to {@link UserService} today
- * is {@code GET /api/auth/me} on {@link AuthController}, which calls
- * {@link UserService#findOrCreateUserFromAuth0(String, String, String, String)}
- * to look up or auto-create the authenticated user. These tests therefore
- * exercise the user-management surface of the application as it stands,
- * focusing on:
- * <ul>
- *   <li>HTTP status codes (200 OK, 401-style/error response for unauthenticated)</li>
- *   <li>Authorization (JWT-protected endpoint must reject anonymous calls)</li>
- *   <li>Request/response JSON serialization of user data</li>
- *   <li>Mock interactions with {@link UserService}</li>
- * </ul>
- *
- * <p>{@link OAuth2ResourceServerAutoConfiguration} is excluded so that no
- * real JWT decoder is wired up at startup. The application's custom
- * {@link SecurityConfig} is also excluded for the same reason. The default
- * Spring Boot security autoconfiguration remains active so that
- * {@code @AuthenticationPrincipal Jwt} can be resolved by Spring Security's
- * argument resolver. JWT principals are supplied test-side via the
- * {@code jwt()} request post-processor.</p>
- *
- * <p>Validates: Requirements 3.2, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, 3.15</p>
- */
+
 @WebMvcTest(
         controllers = AuthController.class,
         excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class,
@@ -95,10 +66,7 @@ class UserControllerTest extends ControllerTestBase {
                 .build();
     }
 
-    /**
-     * Builds a minimal Auth0-style JWT for use as the authenticated principal
-     * on the {@code /api/auth/me} endpoint.
-     */
+    
     private Jwt jwtFor(String email, String name, String sub, String picture) {
         Jwt.Builder builder = Jwt.withTokenValue("test-token")
                 .header("alg", "RS256")
@@ -125,8 +93,8 @@ class UserControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getCurrentUser_withExistingUser_returns200OkAndSerializedUser")
         void getCurrentUser_withExistingUser_returns200OkAndSerializedUser() throws Exception {
-            // Given - an authenticated JWT for an existing user, and the service
-            // returns the persisted user record.
+            
+            
             String email = "jane.doe@example.com";
             String name = "Jane Doe";
             String sub = "auth0|abc123";
@@ -137,7 +105,7 @@ class UserControllerTest extends ControllerTestBase {
 
             Jwt jwt = jwtFor(email, name, sub, picture);
 
-            // When/Then - 200 OK with the merged claims + DB id payload.
+            
             mockMvc.perform(get("/api/auth/me")
                             .with(jwt().jwt(jwt))
                             .contentType(MediaType.APPLICATION_JSON))
@@ -157,7 +125,7 @@ class UserControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getCurrentUser_withNewUser_returns200OkAndAutoCreatedUser")
         void getCurrentUser_withNewUser_returns200OkAndAutoCreatedUser() throws Exception {
-            // Given - first-time login: service auto-creates and returns the new record.
+            
             String email = "newbie@example.com";
             String name = "New Bie";
             String sub = "auth0|new-user-999";
@@ -173,7 +141,7 @@ class UserControllerTest extends ControllerTestBase {
             when(userService.findOrCreateUserFromAuth0(email, name, sub, picture))
                     .thenReturn(created);
 
-            // When/Then
+            
             mockMvc.perform(get("/api/auth/me")
                             .with(jwt().jwt(jwtFor(email, name, sub, picture)))
                             .contentType(MediaType.APPLICATION_JSON))
@@ -189,7 +157,7 @@ class UserControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getCurrentUser_passesJwtClaimsToServiceUnchanged")
         void getCurrentUser_passesJwtClaimsToServiceUnchanged() throws Exception {
-            // Given - verify controller forwards JWT claims verbatim to UserService.
+            
             String email = "verbatim@example.com";
             String name = "Ver Batim";
             String sub = "auth0|verbatim";
@@ -198,12 +166,12 @@ class UserControllerTest extends ControllerTestBase {
             when(userService.findOrCreateUserFromAuth0(anyString(), anyString(), anyString(), anyString()))
                     .thenReturn(existingUser);
 
-            // When
+            
             mockMvc.perform(get("/api/auth/me")
                             .with(jwt().jwt(jwtFor(email, name, sub, picture))))
                     .andExpect(status().isOk());
 
-            // Then - exact same string args reach the service
+            
             verify(userService).findOrCreateUserFromAuth0(
                     eq(email), eq(name), eq(sub), eq(picture));
         }
@@ -211,7 +179,7 @@ class UserControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getCurrentUser_withNullPictureClaim_returns200OkAndNullPicture")
         void getCurrentUser_withNullPictureClaim_returns200OkAndNullPicture() throws Exception {
-            // Given - JWT without a picture claim (optional Auth0 field).
+            
             String email = "nopic@example.com";
             String name = "No Pic";
             String sub = "auth0|nopic";
@@ -219,7 +187,7 @@ class UserControllerTest extends ControllerTestBase {
             when(userService.findOrCreateUserFromAuth0(email, name, sub, null))
                     .thenReturn(existingUser);
 
-            // When/Then - response still serializes successfully with null picture.
+            
             mockMvc.perform(get("/api/auth/me")
                             .with(jwt().jwt(jwtFor(email, name, sub, null))))
                     .andExpect(status().isOk())
@@ -232,11 +200,11 @@ class UserControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getCurrentUser_whenServiceThrowsRuntimeException_returns500InternalServerError")
         void getCurrentUser_whenServiceThrowsRuntimeException_returns500InternalServerError() throws Exception {
-            // Given - service blows up (e.g. DB outage).
+            
             when(userService.findOrCreateUserFromAuth0(any(), any(), any(), any()))
                     .thenThrow(new RuntimeException("Database unavailable"));
 
-            // When/Then - GlobalExceptionHandler maps RuntimeException to 500.
+            
             mockMvc.perform(get("/api/auth/me")
                             .with(jwt().jwt(jwtFor("a@b.com", "A B", "auth0|x", null))))
                     .andExpect(status().isInternalServerError())
@@ -253,13 +221,13 @@ class UserControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getCurrentUser_withoutJwt_doesNotReturn200")
         void getCurrentUser_withoutJwt_doesNotReturn200() throws Exception {
-            // Given - no JWT principal is supplied. Spring Security's
-            // @AuthenticationPrincipal resolver cannot bind a Jwt argument and
-            // the call must NOT succeed with 200 OK. The exact status depends
-            // on whether the security filter chain is active in the test
-            // slice; either a 401/403 (filters active) or a 5xx resolution
-            // failure (filters disabled) confirms the endpoint refuses to
-            // serve unauthenticated callers.
+            
+            
+            
+            
+            
+            
+            
             mockMvc.perform(get("/api/auth/me")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(result -> {
@@ -270,7 +238,7 @@ class UserControllerTest extends ControllerTestBase {
                         }
                     });
 
-            // The service must never be invoked when no principal is present.
+            
             verify(userService, never())
                     .findOrCreateUserFromAuth0(any(), any(), any(), any());
         }

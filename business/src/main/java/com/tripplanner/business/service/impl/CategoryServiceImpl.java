@@ -10,9 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of {@link CategoryService}.
- */
+
 @Service
 @Transactional(readOnly = true)
 public class CategoryServiceImpl implements CategoryService {

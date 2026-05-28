@@ -6,9 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Entity representing a category (Kategorija) for activities.
- */
+
 @Entity
 @Table(name = "KATEGORIJA")
 @Data

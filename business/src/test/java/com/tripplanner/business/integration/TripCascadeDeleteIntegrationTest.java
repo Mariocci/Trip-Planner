@@ -34,19 +34,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Integration test for cascade delete behavior when removing a trip via
- * {@link TripService#deleteTrip(Integer, Integer)}.
- *
- * <p>This test exercises the complete service plus data-access flow against
- * an H2 in-memory database. It seeds a trip together with activities,
- * expenses, and participants, deletes the trip through the service, and then
- * verifies that all associated records are removed from their respective
- * repositories. Locations and categories referenced by activities are
- * expected to remain because they are independent reference data.</p>
- *
- * <p>Validates Requirements: 4.1, 4.6, 4.7, 4.9</p>
- */
+
 @SpringBootTest(classes = TestBusinessApplication.class)
 @Transactional
 @DisplayName("Trip Cascade Delete Integration Tests")
@@ -100,7 +88,7 @@ class TripCascadeDeleteIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Two users: an organizer (will perform delete) and a regular participant.
+        
         organizerUser = userRepository.save(Korisnik.builder()
                 .ime("Olivia")
                 .prezime("Organizer")
@@ -117,7 +105,7 @@ class TripCascadeDeleteIntegrationTest {
                 .oauthId("google-cascade-participant")
                 .build());
 
-        // Trip that will be deleted.
+        
         trip = tripRepository.save(Putovanje.builder()
                 .naziv("Cascade Delete Trip")
                 .opis("Trip used to verify cascading delete behavior")
@@ -126,7 +114,7 @@ class TripCascadeDeleteIntegrationTest {
                 .ukTrosak(BigDecimal.ZERO)
                 .build());
 
-        // Two participants on the trip: organizer + regular participant.
+        
         Sudionik organizerParticipant = participantRepository.save(Sudionik.builder()
                 .putovanje(trip)
                 .korisnik(organizerUser)
@@ -139,7 +127,7 @@ class TripCascadeDeleteIntegrationTest {
                 .uloga("participant")
                 .build());
 
-        // Reference data for activities (location + category).
+        
         testLocation = locationRepository.save(Lokacija.builder()
                 .naziv("Eiffel Tower")
                 .adresa("Champ de Mars")
@@ -152,7 +140,7 @@ class TripCascadeDeleteIntegrationTest {
                 .opis("Tourist attractions")
                 .build());
 
-        // Two activities tied to the trip.
+        
         Aktivnost activity1 = activityRepository.save(Aktivnost.builder()
                 .naziv("Visit Eiffel Tower")
                 .opis("Morning visit")
@@ -173,7 +161,7 @@ class TripCascadeDeleteIntegrationTest {
                 .categories(new java.util.ArrayList<>(Arrays.asList(testCategory)))
                 .build());
 
-        // Two expenses tied to the trip.
+        
         Trosak expense1 = expenseRepository.save(Trosak.builder()
                 .iznos(new BigDecimal("125.50"))
                 .opis("Hotel booking")
@@ -188,7 +176,7 @@ class TripCascadeDeleteIntegrationTest {
                 .putovanje(trip)
                 .build());
 
-        // Cache IDs so we can assert against them after the test deletes the parent.
+        
         tripId = trip.getPutovanjeId();
         organizerUserId = organizerUser.getKorisnikId();
         participantUserId = participantUser.getKorisnikId();
@@ -201,11 +189,11 @@ class TripCascadeDeleteIntegrationTest {
         locationId = testLocation.getLokacijaId();
         categoryId = testCategory.getKategorijaId();
 
-        // Flush so all seed inserts hit the database, then clear the persistence
-        // context so subsequent service calls reload entities fresh. This mirrors
-        // how the real application behaves across separate requests, and is what
-        // allows JPA's cascade-on-delete to traverse lazy collections of the
-        // Putovanje aggregate when the trip is deleted.
+        
+        
+        
+        
+        
         entityManager.flush();
         entityManager.clear();
     }
@@ -213,8 +201,8 @@ class TripCascadeDeleteIntegrationTest {
     @Test
     @DisplayName("seed data is fully persisted before deletion")
     void seedData_isFullyPersistedBeforeDeletion() {
-        // Sanity guard - verifies the @BeforeEach state is what later assertions
-        // are comparing against.
+        
+        
         assertThat(tripRepository.findById(tripId)).isPresent();
         assertThat(participantRepository.findByPutovanje_PutovanjeId(tripId)).hasSize(2);
         assertThat(activityRepository.findByPutovanje_PutovanjeIdOrderByDatumVrijemePoc(tripId))
@@ -225,13 +213,13 @@ class TripCascadeDeleteIntegrationTest {
     @Test
     @DisplayName("deleteTrip removes the trip itself from the database")
     void deleteTrip_removesTripFromRepository() {
-        // When
+        
         tripService.deleteTrip(tripId, organizerUserId);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then
+        
         assertThat(tripRepository.findById(tripId)).isEmpty();
         assertThat(tripRepository.existsById(tripId)).isFalse();
     }
@@ -239,17 +227,17 @@ class TripCascadeDeleteIntegrationTest {
     @Test
     @DisplayName("deleteTrip cascades to all associated activities")
     void deleteTrip_cascadesToActivities() {
-        // When
+        
         tripService.deleteTrip(tripId, organizerUserId);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then - both activities are gone
+        
         assertThat(activityRepository.findById(activity1Id)).isEmpty();
         assertThat(activityRepository.findById(activity2Id)).isEmpty();
 
-        // And the trip-scoped query returns no activities
+        
         List<Aktivnost> tripActivities =
                 activityRepository.findByPutovanje_PutovanjeIdOrderByDatumVrijemePoc(tripId);
         assertThat(tripActivities).isEmpty();
@@ -258,17 +246,17 @@ class TripCascadeDeleteIntegrationTest {
     @Test
     @DisplayName("deleteTrip cascades to all associated expenses")
     void deleteTrip_cascadesToExpenses() {
-        // When
+        
         tripService.deleteTrip(tripId, organizerUserId);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then - both expenses are gone
+        
         assertThat(expenseRepository.findById(expense1Id)).isEmpty();
         assertThat(expenseRepository.findById(expense2Id)).isEmpty();
 
-        // And the trip-scoped query returns no expenses
+        
         List<Trosak> tripExpenses = expenseRepository.findByPutovanje_PutovanjeId(tripId);
         assertThat(tripExpenses).isEmpty();
     }
@@ -276,17 +264,17 @@ class TripCascadeDeleteIntegrationTest {
     @Test
     @DisplayName("deleteTrip cascades to all participants (organizer + regular)")
     void deleteTrip_cascadesToParticipants() {
-        // When
+        
         tripService.deleteTrip(tripId, organizerUserId);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then - both participant rows are gone
+        
         assertThat(participantRepository.findById(organizerSudionikId)).isEmpty();
         assertThat(participantRepository.findById(participantSudionikId)).isEmpty();
 
-        // And the trip-scoped query returns no participants
+        
         assertThat(participantRepository.findByPutovanje_PutovanjeId(tripId)).isEmpty();
         assertThat(participantRepository.countOrganizersByPutovanjeId(tripId)).isZero();
     }
@@ -294,36 +282,36 @@ class TripCascadeDeleteIntegrationTest {
     @Test
     @DisplayName("deleteTrip removes every record associated with the trip in a single call")
     void deleteTrip_removesAllAssociatedRecordsInSingleCall() {
-        // When
+        
         tripService.deleteTrip(tripId, organizerUserId);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then - trip itself
+        
         assertThat(tripRepository.findById(tripId)).isEmpty();
 
-        // Then - all participants gone
+        
         assertThat(participantRepository.findByPutovanje_PutovanjeId(tripId)).isEmpty();
 
-        // Then - all activities gone
+        
         assertThat(activityRepository.findByPutovanje_PutovanjeIdOrderByDatumVrijemePoc(tripId))
                 .isEmpty();
 
-        // Then - all expenses gone
+        
         assertThat(expenseRepository.findByPutovanje_PutovanjeId(tripId)).isEmpty();
     }
 
     @Test
     @DisplayName("deleteTrip does not remove referenced users")
     void deleteTrip_doesNotRemoveUsers() {
-        // When
+        
         tripService.deleteTrip(tripId, organizerUserId);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then - users remain in their repository, only the participant join row was removed
+        
         assertThat(userRepository.findById(organizerUserId)).isPresent();
         assertThat(userRepository.findById(participantUserId)).isPresent();
     }
@@ -331,14 +319,14 @@ class TripCascadeDeleteIntegrationTest {
     @Test
     @DisplayName("deleteTrip does not remove shared reference data (locations, categories)")
     void deleteTrip_doesNotRemoveLocationsOrCategories() {
-        // When
+        
         tripService.deleteTrip(tripId, organizerUserId);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then - location and category referenced by activities are independent
-        // reference data and must survive trip deletion.
+        
+        
         assertThat(locationRepository.findById(locationId)).isPresent();
         assertThat(categoryRepository.findById(categoryId)).isPresent();
     }

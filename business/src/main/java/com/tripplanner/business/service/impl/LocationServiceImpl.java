@@ -11,9 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of {@link LocationService}.
- */
+
 @Service
 @Transactional
 public class LocationServiceImpl implements LocationService {
@@ -48,8 +46,8 @@ public class LocationServiceImpl implements LocationService {
     @Override
     @Transactional(readOnly = true)
     public List<LocationResponseDTO> searchLocations(String query) {
-        // In a real implementation, this would integrate with Google Maps API
-        // For now, return all locations (simplified)
+        
+        
         List<Lokacija> locations = locationRepository.findAll();
         return locations.stream()
                 .filter(loc -> loc.getNaziv().toLowerCase().contains(query.toLowerCase()) ||

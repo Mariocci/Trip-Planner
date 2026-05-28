@@ -13,9 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Implementation of {@link GooglePlacesService}.
- */
+
 @Service
 public class GooglePlacesServiceImpl implements GooglePlacesService {
 
@@ -49,8 +47,8 @@ public class GooglePlacesServiceImpl implements GooglePlacesService {
             
             List<Map<String, Object>> results = parsePlacesResponse(response.getBody());
             
-            // NO FILTERING - return all results from Google
-            // Sort results: cities first, then other places
+            
+            
             results.sort((a, b) -> {
                 boolean aIsCity = isCity(a);
                 boolean bIsCity = isCity(b);
@@ -78,7 +76,7 @@ public class GooglePlacesServiceImpl implements GooglePlacesService {
         List<String> types = (List<String>) place.get("types");
         if (types == null) return false;
         
-        // Filter out only obvious business/lodging places, keep cities and tourist destinations
+        
         List<String> unwantedTypes = java.util.Arrays.asList(
             "lodging", "real_estate_agency", "apartment_building"
         );

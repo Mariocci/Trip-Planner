@@ -47,29 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Unit tests for {@link TripController}.
- *
- * <p>Tests the controller in isolation by mocking {@link TripService}.
- * Exercises HTTP request/response handling, status codes, JSON serialization,
- * request validation, authorization propagation and error handling through
- * the global exception handler.</p>
- *
- * <p>Security filters are disabled for these tests so the controller logic
- * can be verified without needing a valid JWT token. Authorization-related
- * behavior is exercised at the service layer (mocked), where the production
- * service throws {@link RuntimeException} with an "Access denied" message
- * for non-participants/non-organizers. The {@link GlobalExceptionHandler}
- * maps that to a 500 response, while {@link IllegalArgumentException}
- * (e.g. invalid date range) maps to 400.</p>
- *
- * <p><strong>Implementation note:</strong> The current {@link TripController}
- * exposes {@code GET /api/trips?userId=...} for listing a user's trips
- * (not {@code /api/trips/user/{userId}} as some design documents suggest).
- * Tests target the actual implemented routes.</p>
- *
- * <p>Validates: Requirements 3.3, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, 3.15</p>
- */
+
 @WebMvcTest(
         controllers = TripController.class,
         excludeAutoConfiguration = {
@@ -129,9 +107,9 @@ class TripControllerTest extends ControllerTestBase {
                 .build();
     }
 
-    // ----------------------------------------------------------------------
-    // POST /api/trips
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("POST /api/trips")
@@ -140,11 +118,11 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip_withValidRequest_returns201CreatedWithBody")
         void createTrip_withValidRequest_returns201CreatedWithBody() throws Exception {
-            // Given
+            
             when(tripService.createTrip(eq(USER_ID), any(CreateTripDTO.class)))
                     .thenReturn(tripResponse);
 
-            // When / Then
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -166,18 +144,18 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip_deserializesRequestBodyToDTO")
         void createTrip_deserializesRequestBodyToDTO() throws Exception {
-            // Given
+            
             when(tripService.createTrip(anyInt(), any(CreateTripDTO.class)))
                     .thenReturn(tripResponse);
 
-            // When
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validCreateDTO)))
                     .andExpect(status().isCreated());
 
-            // Then - capture and verify deserialized DTO matches the JSON we sent
+            
             ArgumentCaptor<CreateTripDTO> captor = ArgumentCaptor.forClass(CreateTripDTO.class);
             verify(tripService).createTrip(eq(USER_ID), captor.capture());
 
@@ -191,14 +169,14 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip_withMissingNaziv_returns400BadRequest")
         void createTrip_withMissingNaziv_returns400BadRequest() throws Exception {
-            // Given - naziv is @NotBlank
+            
             CreateTripDTO invalid = CreateTripDTO.builder()
                     .naziv("")
                     .datumPoc(startDate)
                     .datumKraj(endDate)
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -211,14 +189,14 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip_withMissingDatumPoc_returns400BadRequest")
         void createTrip_withMissingDatumPoc_returns400BadRequest() throws Exception {
-            // Given - datumPoc is @NotNull
+            
             CreateTripDTO invalid = CreateTripDTO.builder()
                     .naziv("Valid Trip")
                     .datumPoc(null)
                     .datumKraj(endDate)
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -231,14 +209,14 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip_withMissingDatumKraj_returns400BadRequest")
         void createTrip_withMissingDatumKraj_returns400BadRequest() throws Exception {
-            // Given - datumKraj is @NotNull
+            
             CreateTripDTO invalid = CreateTripDTO.builder()
                     .naziv("Valid Trip")
                     .datumPoc(startDate)
                     .datumKraj(null)
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -251,7 +229,7 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip_withMissingUserIdParam_returns400BadRequest")
         void createTrip_withMissingUserIdParam_returns400BadRequest() throws Exception {
-            // When / Then - userId is a required @RequestParam
+            
             mockMvc.perform(post("/api/trips")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validCreateDTO)))
@@ -263,10 +241,10 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip_withMalformedJson_returnsErrorAndDoesNotCallService")
         void createTrip_withMalformedJson_returnsErrorAndDoesNotCallService() throws Exception {
-            // Given - the production GlobalExceptionHandler maps HttpMessageNotReadableException
-            // (a RuntimeException) to 500. We assert on the resulting client/server error
-            // code and, more importantly, that the service was never invoked because the
-            // request body could not be deserialized.
+            
+            
+            
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -279,12 +257,12 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip_whenEndDateBeforeStartDate_propagates400BadRequest")
         void createTrip_whenEndDateBeforeStartDate_propagates400BadRequest() throws Exception {
-            // Given - service throws IllegalArgumentException for invalid date range
+            
             when(tripService.createTrip(eq(USER_ID), any(CreateTripDTO.class)))
                     .thenThrow(new IllegalArgumentException(
                             "End date must be after or equal to start date"));
 
-            // When / Then - GlobalExceptionHandler maps IllegalArgumentException to 400
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -301,11 +279,11 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip_whenUserNotFound_propagatesError")
         void createTrip_whenUserNotFound_propagatesError() throws Exception {
-            // Given - service throws RuntimeException for missing user
+            
             when(tripService.createTrip(eq(USER_ID), any(CreateTripDTO.class)))
                     .thenThrow(new RuntimeException("User not found"));
 
-            // When / Then
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -318,9 +296,9 @@ class TripControllerTest extends ControllerTestBase {
         }
     }
 
-    // ----------------------------------------------------------------------
-    // GET /api/trips/{tripId}
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("GET /api/trips/{tripId}")
@@ -329,10 +307,10 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getTripById_withValidRequest_returns200OkWithBody")
         void getTripById_withValidRequest_returns200OkWithBody() throws Exception {
-            // Given
+            
             when(tripService.getTripById(TRIP_ID, USER_ID)).thenReturn(tripResponse);
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isOk())
@@ -350,7 +328,7 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getTripById_withMissingUserIdParam_returns400BadRequest")
         void getTripById_withMissingUserIdParam_returns400BadRequest() throws Exception {
-            // When / Then
+            
             mockMvc.perform(get("/api/trips/{tripId}", TRIP_ID))
                     .andExpect(status().is4xxClientError());
 
@@ -360,12 +338,12 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getTripById_whenUserNotParticipant_propagatesAccessDenied")
         void getTripById_whenUserNotParticipant_propagatesAccessDenied() throws Exception {
-            // Given - service throws RuntimeException for unauthorized access
+            
             when(tripService.getTripById(TRIP_ID, OTHER_USER_ID))
                     .thenThrow(new RuntimeException(
                             "Access denied: User is not a participant of this trip"));
 
-            // When / Then - GlobalExceptionHandler maps RuntimeException to 500
+            
             mockMvc.perform(get("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", OTHER_USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
@@ -378,11 +356,11 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getTripById_whenTripNotFound_propagatesError")
         void getTripById_whenTripNotFound_propagatesError() throws Exception {
-            // Given
+            
             when(tripService.getTripById(TRIP_ID, USER_ID))
                     .thenThrow(new RuntimeException("Trip not found"));
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
@@ -394,10 +372,10 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getTripById_withNonNumericTripId_doesNotCallService")
         void getTripById_withNonNumericTripId_doesNotCallService() throws Exception {
-            // When / Then - path variable type mismatch raises
-            // MethodArgumentTypeMismatchException, which is a RuntimeException
-            // and is mapped to 500 by GlobalExceptionHandler. The important
-            // contract is that the request never reaches the service.
+            
+            
+            
+            
             mockMvc.perform(get("/api/trips/{tripId}", "not-a-number")
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().is5xxServerError());
@@ -406,9 +384,9 @@ class TripControllerTest extends ControllerTestBase {
         }
     }
 
-    // ----------------------------------------------------------------------
-    // GET /api/trips  (list trips for a user)
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("GET /api/trips")
@@ -417,7 +395,7 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("listUserTrips_withValidRequest_returns200OkWithList")
         void listUserTrips_withValidRequest_returns200OkWithList() throws Exception {
-            // Given
+            
             TripResponseDTO second = TripResponseDTO.builder()
                     .putovanjeId(TRIP_ID + 1)
                     .naziv("Rome Trip")
@@ -431,7 +409,7 @@ class TripControllerTest extends ControllerTestBase {
             when(tripService.listUserTrips(USER_ID))
                     .thenReturn(Arrays.asList(tripResponse, second));
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips")
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isOk())
@@ -449,10 +427,10 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("listUserTrips_whenUserHasNoTrips_returns200OkWithEmptyList")
         void listUserTrips_whenUserHasNoTrips_returns200OkWithEmptyList() throws Exception {
-            // Given
+            
             when(tripService.listUserTrips(USER_ID)).thenReturn(Collections.emptyList());
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips")
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isOk())
@@ -465,7 +443,7 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("listUserTrips_withMissingUserIdParam_returns400BadRequest")
         void listUserTrips_withMissingUserIdParam_returns400BadRequest() throws Exception {
-            // When / Then
+            
             mockMvc.perform(get("/api/trips"))
                     .andExpect(status().is4xxClientError());
 
@@ -473,9 +451,9 @@ class TripControllerTest extends ControllerTestBase {
         }
     }
 
-    // ----------------------------------------------------------------------
-    // PUT /api/trips/{tripId}
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("PUT /api/trips/{tripId}")
@@ -484,7 +462,7 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateTrip_withValidRequest_returns200OkWithUpdatedBody")
         void updateTrip_withValidRequest_returns200OkWithUpdatedBody() throws Exception {
-            // Given
+            
             TripResponseDTO updated = TripResponseDTO.builder()
                     .putovanjeId(TRIP_ID)
                     .naziv("Updated Paris Trip")
@@ -498,7 +476,7 @@ class TripControllerTest extends ControllerTestBase {
             when(tripService.updateTrip(eq(TRIP_ID), eq(USER_ID), any(UpdateTripDTO.class)))
                     .thenReturn(updated);
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -516,7 +494,7 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateTrip_withPartialBody_returns200Ok")
         void updateTrip_withPartialBody_returns200Ok() throws Exception {
-            // Given - UpdateTripDTO has no field-level constraints, partial updates allowed
+            
             UpdateTripDTO partial = UpdateTripDTO.builder()
                     .naziv("Renamed Trip")
                     .build();
@@ -524,14 +502,14 @@ class TripControllerTest extends ControllerTestBase {
             when(tripService.updateTrip(eq(TRIP_ID), eq(USER_ID), any(UpdateTripDTO.class)))
                     .thenReturn(tripResponse);
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(partial)))
                     .andExpect(status().isOk());
 
-            // Verify only the naziv field is set on the captured DTO
+            
             ArgumentCaptor<UpdateTripDTO> captor = ArgumentCaptor.forClass(UpdateTripDTO.class);
             verify(tripService, times(1))
                     .updateTrip(eq(TRIP_ID), eq(USER_ID), captor.capture());
@@ -544,7 +522,7 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateTrip_withMissingUserIdParam_returns400BadRequest")
         void updateTrip_withMissingUserIdParam_returns400BadRequest() throws Exception {
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}", TRIP_ID)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validUpdateDTO)))
@@ -556,12 +534,12 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateTrip_whenUserNotOrganizer_propagatesAccessDenied")
         void updateTrip_whenUserNotOrganizer_propagatesAccessDenied() throws Exception {
-            // Given - non-organizers cannot update
+            
             when(tripService.updateTrip(eq(TRIP_ID), eq(OTHER_USER_ID), any(UpdateTripDTO.class)))
                     .thenThrow(new RuntimeException(
                             "Access denied: Only organizers can update trips"));
 
-            // When / Then - RuntimeException maps to 500
+            
             mockMvc.perform(put("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", OTHER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -577,12 +555,12 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateTrip_whenEndDateBeforeStartDate_propagates400BadRequest")
         void updateTrip_whenEndDateBeforeStartDate_propagates400BadRequest() throws Exception {
-            // Given
+            
             when(tripService.updateTrip(eq(TRIP_ID), eq(USER_ID), any(UpdateTripDTO.class)))
                     .thenThrow(new IllegalArgumentException(
                             "End date must be after or equal to start date"));
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -599,11 +577,11 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateTrip_whenTripNotFound_propagatesError")
         void updateTrip_whenTripNotFound_propagatesError() throws Exception {
-            // Given
+            
             when(tripService.updateTrip(eq(TRIP_ID), eq(USER_ID), any(UpdateTripDTO.class)))
                     .thenThrow(new RuntimeException("Trip not found"));
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -616,9 +594,9 @@ class TripControllerTest extends ControllerTestBase {
         }
     }
 
-    // ----------------------------------------------------------------------
-    // DELETE /api/trips/{tripId}
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("DELETE /api/trips/{tripId}")
@@ -627,10 +605,10 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteTrip_withValidRequest_returns204NoContent")
         void deleteTrip_withValidRequest_returns204NoContent() throws Exception {
-            // Given
+            
             doNothing().when(tripService).deleteTrip(TRIP_ID, USER_ID);
 
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isNoContent())
@@ -642,7 +620,7 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteTrip_withMissingUserIdParam_returns400BadRequest")
         void deleteTrip_withMissingUserIdParam_returns400BadRequest() throws Exception {
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}", TRIP_ID))
                     .andExpect(status().is4xxClientError());
 
@@ -652,11 +630,11 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteTrip_whenUserNotOrganizer_propagatesAccessDenied")
         void deleteTrip_whenUserNotOrganizer_propagatesAccessDenied() throws Exception {
-            // Given - non-organizers cannot delete
+            
             doThrow(new RuntimeException("Access denied: Only organizers can delete trips"))
                     .when(tripService).deleteTrip(TRIP_ID, OTHER_USER_ID);
 
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", OTHER_USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
@@ -669,11 +647,11 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteTrip_whenTripNotFound_propagatesError")
         void deleteTrip_whenTripNotFound_propagatesError() throws Exception {
-            // Given
+            
             doThrow(new RuntimeException("Trip not found"))
                     .when(tripService).deleteTrip(TRIP_ID, USER_ID);
 
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
@@ -685,10 +663,10 @@ class TripControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteTrip_withNonNumericTripId_doesNotCallService")
         void deleteTrip_withNonNumericTripId_doesNotCallService() throws Exception {
-            // When / Then - path variable type mismatch raises
-            // MethodArgumentTypeMismatchException, mapped to 500 by
-            // GlobalExceptionHandler. The important contract is that the
-            // request never reaches the service layer.
+            
+            
+            
+            
             mockMvc.perform(delete("/api/trips/{tripId}", "abc")
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().is5xxServerError());

@@ -11,11 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Abstract base class for repository tests.
- * Provides common setup for H2 database configuration and TestEntityManager access.
- * Includes helper methods for creating test entities.
- */
+
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 public abstract class RepositoryTestBase {
@@ -23,11 +19,7 @@ public abstract class RepositoryTestBase {
     @Autowired
     protected TestEntityManager entityManager;
 
-    /**
-     * Create a test user with default values.
-     *
-     * @return Korisnik entity
-     */
+    
     protected Korisnik createTestUser() {
         return Korisnik.builder()
                 .ime("John")
@@ -38,12 +30,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test user with custom email.
-     *
-     * @param email User email
-     * @return Korisnik entity
-     */
+    
     protected Korisnik createTestUser(String email) {
         return Korisnik.builder()
                 .ime("John")
@@ -54,14 +41,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test user with custom values.
-     *
-     * @param firstName First name
-     * @param lastName  Last name
-     * @param email     Email
-     * @return Korisnik entity
-     */
+    
     protected Korisnik createTestUser(String firstName, String lastName, String email) {
         return Korisnik.builder()
                 .ime(firstName)
@@ -72,11 +52,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test trip with default values.
-     *
-     * @return Putovanje entity
-     */
+    
     protected Putovanje createTestTrip() {
         return Putovanje.builder()
                 .naziv("Test Trip")
@@ -87,14 +63,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test trip with custom name and dates.
-     *
-     * @param name      Trip name
-     * @param startDate Start date
-     * @param endDate   End date
-     * @return Putovanje entity
-     */
+    
     protected Putovanje createTestTrip(String name, LocalDate startDate, LocalDate endDate) {
         return Putovanje.builder()
                 .naziv(name)
@@ -105,13 +74,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test activity with default values.
-     *
-     * @param trip     Associated trip
-     * @param location Associated location
-     * @return Aktivnost entity
-     */
+    
     protected Aktivnost createTestActivity(Putovanje trip, Lokacija location) {
         return Aktivnost.builder()
                 .naziv("Test Activity")
@@ -123,16 +86,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test activity with custom values.
-     *
-     * @param name      Activity name
-     * @param trip      Associated trip
-     * @param location  Associated location
-     * @param startTime Start time
-     * @param endTime   End time
-     * @return Aktivnost entity
-     */
+    
     protected Aktivnost createTestActivity(String name, Putovanje trip, Lokacija location,
                                            LocalDateTime startTime, LocalDateTime endTime) {
         return Aktivnost.builder()
@@ -145,12 +99,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test expense with default values.
-     *
-     * @param trip Associated trip
-     * @return Trosak entity
-     */
+    
     protected Trosak createTestExpense(Putovanje trip) {
         return Trosak.builder()
                 .iznos(new BigDecimal("100.00"))
@@ -160,13 +109,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test expense with custom amount.
-     *
-     * @param trip   Associated trip
-     * @param amount Expense amount
-     * @return Trosak entity
-     */
+    
     protected Trosak createTestExpense(Putovanje trip, BigDecimal amount) {
         return Trosak.builder()
                 .iznos(amount)
@@ -176,15 +119,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test expense with custom values.
-     *
-     * @param trip        Associated trip
-     * @param amount      Expense amount
-     * @param description Expense description
-     * @param date        Expense date
-     * @return Trosak entity
-     */
+    
     protected Trosak createTestExpense(Putovanje trip, BigDecimal amount, String description, LocalDate date) {
         return Trosak.builder()
                 .iznos(amount)
@@ -194,13 +129,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test participant with default role.
-     *
-     * @param trip Associated trip
-     * @param user Associated user
-     * @return Sudionik entity
-     */
+    
     protected Sudionik createTestParticipant(Putovanje trip, Korisnik user) {
         return Sudionik.builder()
                 .uloga("participant")
@@ -209,14 +138,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test participant with custom role.
-     *
-     * @param trip Associated trip
-     * @param user Associated user
-     * @param role Participant role
-     * @return Sudionik entity
-     */
+    
     protected Sudionik createTestParticipant(Putovanje trip, Korisnik user, String role) {
         return Sudionik.builder()
                 .uloga(role)
@@ -225,11 +147,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test location with default values.
-     *
-     * @return Lokacija entity
-     */
+    
     protected Lokacija createTestLocation() {
         return Lokacija.builder()
                 .naziv("Test Location")
@@ -239,15 +157,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test location with custom values.
-     *
-     * @param name    Location name
-     * @param address Address
-     * @param city    City
-     * @param country Country
-     * @return Lokacija entity
-     */
+    
     protected Lokacija createTestLocation(String name, String address, String city, String country) {
         return Lokacija.builder()
                 .naziv(name)
@@ -257,11 +167,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test category with default values.
-     *
-     * @return Kategorija entity
-     */
+    
     protected Kategorija createTestCategory() {
         return Kategorija.builder()
                 .naziv("Test Category")
@@ -269,12 +175,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Create a test category with custom name.
-     *
-     * @param name Category name
-     * @return Kategorija entity
-     */
+    
     protected Kategorija createTestCategory(String name) {
         return Kategorija.builder()
                 .naziv(name)
@@ -282,10 +183,7 @@ public abstract class RepositoryTestBase {
                 .build();
     }
 
-    /**
-     * Clear all test data from the database.
-     * Useful for cleanup between tests if not using @Transactional.
-     */
+    
     protected void clearDatabase() {
         EntityManager em = entityManager.getEntityManager();
         em.createQuery("DELETE FROM Aktivnost").executeUpdate();

@@ -10,9 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Entity representing an activity (Aktivnost) within a trip.
- */
+
 @Entity
 @Table(name = "AKTIVNOST")
 @Data

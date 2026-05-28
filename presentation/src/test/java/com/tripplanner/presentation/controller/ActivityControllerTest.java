@@ -45,30 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Unit tests for {@link ActivityController}.
- *
- * <p>Tests the controller in isolation by mocking {@link ActivityService}.
- * Exercises HTTP request/response handling, status codes, JSON serialization,
- * request validation, and error propagation through the global exception
- * handler.</p>
- *
- * <p>Security filters are disabled for these tests so the controller logic
- * can be verified without needing a valid JWT token. Authorization-related
- * behavior is exercised at the service layer (mocked), where the production
- * service throws {@link RuntimeException} with an "Access denied" message
- * for non-participants. The {@link GlobalExceptionHandler} maps that to a
- * 500 response, while {@link IllegalArgumentException} (e.g. invalid date
- * range) maps to 400.</p>
- *
- * <p><strong>Note:</strong> The current {@link ActivityController}
- * implementation nests every endpoint under
- * {@code /api/trips/{tripId}/activities}, including PUT and DELETE
- * (which the design document describes as {@code /api/activities/{id}}).
- * Tests target the actual implemented routes.</p>
- *
- * <p>Validates: Requirements 3.4, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, 3.15</p>
- */
+
 @WebMvcTest(
         controllers = ActivityController.class,
         excludeAutoConfiguration = {
@@ -149,9 +126,9 @@ class ActivityControllerTest extends ControllerTestBase {
                 .build();
     }
 
-    // ----------------------------------------------------------------------
-    // POST /api/trips/{tripId}/activities
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("POST /api/trips/{tripId}/activities")
@@ -160,11 +137,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createActivity_withValidRequest_returns201CreatedWithBody")
         void createActivity_withValidRequest_returns201CreatedWithBody() throws Exception {
-            // Given
+            
             when(activityService.createActivity(eq(TRIP_ID), eq(USER_ID), any(CreateActivityDTO.class)))
                     .thenReturn(activityResponse);
 
-            // When / Then
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -186,7 +163,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createActivity_withMissingNaziv_returns400BadRequest")
         void createActivity_withMissingNaziv_returns400BadRequest() throws Exception {
-            // Given - naziv is @NotBlank
+            
             CreateActivityDTO invalid = CreateActivityDTO.builder()
                     .naziv("")
                     .datumVrijemePoc(startDateTime)
@@ -194,7 +171,7 @@ class ActivityControllerTest extends ControllerTestBase {
                     .lokacijaId(LOCATION_ID)
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -207,7 +184,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createActivity_withMissingStartDateTime_returns400BadRequest")
         void createActivity_withMissingStartDateTime_returns400BadRequest() throws Exception {
-            // Given - datumVrijemePoc is @NotNull
+            
             CreateActivityDTO invalid = CreateActivityDTO.builder()
                     .naziv("Valid Name")
                     .datumVrijemePoc(null)
@@ -215,7 +192,7 @@ class ActivityControllerTest extends ControllerTestBase {
                     .lokacijaId(LOCATION_ID)
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -228,7 +205,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createActivity_withMissingLocationId_returns400BadRequest")
         void createActivity_withMissingLocationId_returns400BadRequest() throws Exception {
-            // Given - lokacijaId is @NotNull
+            
             CreateActivityDTO invalid = CreateActivityDTO.builder()
                     .naziv("Valid Name")
                     .datumVrijemePoc(startDateTime)
@@ -236,7 +213,7 @@ class ActivityControllerTest extends ControllerTestBase {
                     .lokacijaId(null)
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -249,7 +226,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createActivity_withMissingUserIdParam_returns400BadRequest")
         void createActivity_withMissingUserIdParam_returns400BadRequest() throws Exception {
-            // When / Then - userId is a required @RequestParam
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities", TRIP_ID)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validCreateDTO)))
@@ -261,10 +238,10 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createActivity_withMalformedJson_returnsErrorAndDoesNotCallService")
         void createActivity_withMalformedJson_returnsErrorAndDoesNotCallService() throws Exception {
-            // Given - the production GlobalExceptionHandler maps HttpMessageNotReadableException
-            // (a RuntimeException) to 500. We assert on the resulting client/server error
-            // code and, more importantly, that the service was never invoked because the
-            // request body could not be deserialized.
+            
+            
+            
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -277,11 +254,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createActivity_whenEndBeforeStart_propagates400BadRequest")
         void createActivity_whenEndBeforeStart_propagates400BadRequest() throws Exception {
-            // Given - service throws IllegalArgumentException for invalid date range
+            
             when(activityService.createActivity(eq(TRIP_ID), eq(USER_ID), any(CreateActivityDTO.class)))
                     .thenThrow(new IllegalArgumentException("End datetime must be after start datetime"));
 
-            // When / Then - GlobalExceptionHandler maps IllegalArgumentException to 400
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -297,11 +274,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createActivity_whenUserNotParticipant_propagatesAccessDenied")
         void createActivity_whenUserNotParticipant_propagatesAccessDenied() throws Exception {
-            // Given - service throws RuntimeException for unauthorized access
+            
             when(activityService.createActivity(eq(TRIP_ID), eq(USER_ID), any(CreateActivityDTO.class)))
                     .thenThrow(new RuntimeException("Access denied: User is not a participant of this trip"));
 
-            // When / Then - GlobalExceptionHandler maps RuntimeException to 500
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -317,11 +294,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createActivity_whenTripNotFound_propagatesError")
         void createActivity_whenTripNotFound_propagatesError() throws Exception {
-            // Given - service throws RuntimeException for missing trip
+            
             when(activityService.createActivity(eq(TRIP_ID), eq(USER_ID), any(CreateActivityDTO.class)))
                     .thenThrow(new RuntimeException("Trip not found"));
 
-            // When / Then
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -336,18 +313,18 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createActivity_deserializesRequestBodyToDTO")
         void createActivity_deserializesRequestBodyToDTO() throws Exception {
-            // Given
+            
             when(activityService.createActivity(anyInt(), anyInt(), any(CreateActivityDTO.class)))
                     .thenReturn(activityResponse);
 
-            // When
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validCreateDTO)))
                     .andExpect(status().isCreated());
 
-            // Then - capture and verify deserialized DTO matches the JSON we sent
+            
             org.mockito.ArgumentCaptor<CreateActivityDTO> captor =
                     org.mockito.ArgumentCaptor.forClass(CreateActivityDTO.class);
             verify(activityService).createActivity(eq(TRIP_ID), eq(USER_ID), captor.capture());
@@ -366,9 +343,9 @@ class ActivityControllerTest extends ControllerTestBase {
         }
     }
 
-    // ----------------------------------------------------------------------
-    // GET /api/trips/{tripId}/activities
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("GET /api/trips/{tripId}/activities")
@@ -377,7 +354,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("listTripActivities_withValidRequest_returns200OkWithList")
         void listTripActivities_withValidRequest_returns200OkWithList() throws Exception {
-            // Given
+            
             ActivityResponseDTO second = ActivityResponseDTO.builder()
                     .aktivnostId(ACTIVITY_ID + 1)
                     .naziv("Louvre Museum")
@@ -391,7 +368,7 @@ class ActivityControllerTest extends ControllerTestBase {
             when(activityService.listTripActivities(TRIP_ID, USER_ID))
                     .thenReturn(Arrays.asList(activityResponse, second));
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isOk())
@@ -408,11 +385,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("listTripActivities_whenNoActivities_returns200OkWithEmptyList")
         void listTripActivities_whenNoActivities_returns200OkWithEmptyList() throws Exception {
-            // Given
+            
             when(activityService.listTripActivities(TRIP_ID, USER_ID))
                     .thenReturn(Collections.emptyList());
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isOk())
@@ -425,7 +402,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("listTripActivities_withMissingUserIdParam_returns400BadRequest")
         void listTripActivities_withMissingUserIdParam_returns400BadRequest() throws Exception {
-            // When / Then
+            
             mockMvc.perform(get("/api/trips/{tripId}/activities", TRIP_ID))
                     .andExpect(status().is4xxClientError());
 
@@ -435,11 +412,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("listTripActivities_whenUserNotParticipant_propagatesAccessDenied")
         void listTripActivities_whenUserNotParticipant_propagatesAccessDenied() throws Exception {
-            // Given
+            
             when(activityService.listTripActivities(TRIP_ID, USER_ID))
                     .thenThrow(new RuntimeException("Access denied: User is not a participant of this trip"));
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
@@ -450,9 +427,9 @@ class ActivityControllerTest extends ControllerTestBase {
         }
     }
 
-    // ----------------------------------------------------------------------
-    // GET /api/trips/{tripId}/activities/{activityId}
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("GET /api/trips/{tripId}/activities/{activityId}")
@@ -461,11 +438,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getActivityById_withValidRequest_returns200OkWithBody")
         void getActivityById_withValidRequest_returns200OkWithBody() throws Exception {
-            // Given
+            
             when(activityService.getActivityById(ACTIVITY_ID, USER_ID))
                     .thenReturn(activityResponse);
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isOk())
@@ -479,11 +456,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getActivityById_whenActivityNotFound_propagatesError")
         void getActivityById_whenActivityNotFound_propagatesError() throws Exception {
-            // Given
+            
             when(activityService.getActivityById(ACTIVITY_ID, USER_ID))
                     .thenThrow(new RuntimeException("Activity not found"));
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
@@ -493,9 +470,9 @@ class ActivityControllerTest extends ControllerTestBase {
         }
     }
 
-    // ----------------------------------------------------------------------
-    // PUT /api/trips/{tripId}/activities/{activityId}
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("PUT /api/trips/{tripId}/activities/{activityId}")
@@ -504,7 +481,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateActivity_withValidRequest_returns200OkWithUpdatedBody")
         void updateActivity_withValidRequest_returns200OkWithUpdatedBody() throws Exception {
-            // Given
+            
             ActivityResponseDTO updated = ActivityResponseDTO.builder()
                     .aktivnostId(ACTIVITY_ID)
                     .naziv("Updated Eiffel Tower Visit")
@@ -518,7 +495,7 @@ class ActivityControllerTest extends ControllerTestBase {
             when(activityService.updateActivity(eq(ACTIVITY_ID), eq(USER_ID), any(UpdateActivityDTO.class)))
                     .thenReturn(updated);
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -536,7 +513,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateActivity_withPartialBody_returns200Ok")
         void updateActivity_withPartialBody_returns200Ok() throws Exception {
-            // Given - UpdateActivityDTO has no field-level constraints, so partial updates are valid
+            
             UpdateActivityDTO partial = UpdateActivityDTO.builder()
                     .naziv("Renamed Activity")
                     .build();
@@ -544,7 +521,7 @@ class ActivityControllerTest extends ControllerTestBase {
             when(activityService.updateActivity(eq(ACTIVITY_ID), eq(USER_ID), any(UpdateActivityDTO.class)))
                     .thenReturn(activityResponse);
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -558,7 +535,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateActivity_withMissingUserIdParam_returns400BadRequest")
         void updateActivity_withMissingUserIdParam_returns400BadRequest() throws Exception {
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validUpdateDTO)))
@@ -570,11 +547,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateActivity_whenEndBeforeStart_propagates400BadRequest")
         void updateActivity_whenEndBeforeStart_propagates400BadRequest() throws Exception {
-            // Given
+            
             when(activityService.updateActivity(eq(ACTIVITY_ID), eq(USER_ID), any(UpdateActivityDTO.class)))
                     .thenThrow(new IllegalArgumentException("End datetime must be after start datetime"));
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -590,11 +567,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateActivity_whenUserNotParticipant_propagatesAccessDenied")
         void updateActivity_whenUserNotParticipant_propagatesAccessDenied() throws Exception {
-            // Given
+            
             when(activityService.updateActivity(eq(ACTIVITY_ID), eq(USER_ID), any(UpdateActivityDTO.class)))
                     .thenThrow(new RuntimeException("Access denied: User is not a participant of this trip"));
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -610,11 +587,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateActivity_whenActivityNotFound_propagatesError")
         void updateActivity_whenActivityNotFound_propagatesError() throws Exception {
-            // Given
+            
             when(activityService.updateActivity(eq(ACTIVITY_ID), eq(USER_ID), any(UpdateActivityDTO.class)))
                     .thenThrow(new RuntimeException("Activity not found"));
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -627,9 +604,9 @@ class ActivityControllerTest extends ControllerTestBase {
         }
     }
 
-    // ----------------------------------------------------------------------
-    // DELETE /api/trips/{tripId}/activities/{activityId}
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("DELETE /api/trips/{tripId}/activities/{activityId}")
@@ -638,9 +615,9 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteActivity_withValidRequest_returns204NoContent")
         void deleteActivity_withValidRequest_returns204NoContent() throws Exception {
-            // Given - service returns void; no stubbing needed for happy path
+            
 
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isNoContent());
@@ -651,7 +628,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteActivity_withMissingUserIdParam_returns400BadRequest")
         void deleteActivity_withMissingUserIdParam_returns400BadRequest() throws Exception {
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID))
                     .andExpect(status().is4xxClientError());
 
@@ -661,11 +638,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteActivity_whenActivityNotFound_propagatesError")
         void deleteActivity_whenActivityNotFound_propagatesError() throws Exception {
-            // Given
+            
             org.mockito.Mockito.doThrow(new RuntimeException("Activity not found"))
                     .when(activityService).deleteActivity(ACTIVITY_ID, USER_ID);
 
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
@@ -677,11 +654,11 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteActivity_whenUserNotParticipant_propagatesAccessDenied")
         void deleteActivity_whenUserNotParticipant_propagatesAccessDenied() throws Exception {
-            // Given
+            
             org.mockito.Mockito.doThrow(new RuntimeException("Access denied: User is not a participant of this trip"))
                     .when(activityService).deleteActivity(ACTIVITY_ID, USER_ID);
 
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
@@ -692,9 +669,9 @@ class ActivityControllerTest extends ControllerTestBase {
         }
     }
 
-    // ----------------------------------------------------------------------
-    // HTTP method / routing checks
-    // ----------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("HTTP method / routing")
@@ -703,7 +680,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("activitiesEndpoint_withWrongHttpMethod_returns405MethodNotAllowed")
         void activitiesEndpoint_withWrongHttpMethod_returns405MethodNotAllowed() throws Exception {
-            // When / Then - DELETE is not mapped on the collection endpoint
+            
             mockMvc.perform(delete("/api/trips/{tripId}/activities", TRIP_ID)
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isMethodNotAllowed());
@@ -714,7 +691,7 @@ class ActivityControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("activityResource_withWrongHttpMethod_returns405MethodNotAllowed")
         void activityResource_withWrongHttpMethod_returns405MethodNotAllowed() throws Exception {
-            // When / Then - POST is not mapped on /{activityId}
+            
             mockMvc.perform(post("/api/trips/{tripId}/activities/{activityId}", TRIP_ID, ACTIVITY_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)

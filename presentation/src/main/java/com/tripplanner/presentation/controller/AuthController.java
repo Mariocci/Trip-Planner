@@ -11,10 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * REST controller for authentication operations.
- * Provides Auth0 configuration for frontend and user info endpoints.
- */
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -31,9 +28,7 @@ public class AuthController {
         this.userService = userService;
     }
 
-    /**
-     * Returns Auth0 configuration for frontend.
-     */
+    
     @GetMapping("/config")
     public ResponseEntity<Map<String, String>> getAuthConfig() {
         Map<String, String> config = new HashMap<>();
@@ -44,10 +39,7 @@ public class AuthController {
         return ResponseEntity.ok(config);
     }
 
-    /**
-     * Returns current authenticated user information.
-     * Auto-creates user in database if they don't exist yet.
-     */
+    
     @GetMapping("/me")
     public ResponseEntity<Map<String, Object>> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
         String email = jwt.getClaimAsString("email");
@@ -55,7 +47,7 @@ public class AuthController {
         String picture = jwt.getClaimAsString("picture");
         String sub = jwt.getSubject();
 
-        // Auto-create user if they don't exist
+        
         UserResponseDTO user = userService.findOrCreateUserFromAuth0(email, name, sub, picture);
 
         Map<String, Object> userInfo = new HashMap<>();
@@ -69,9 +61,7 @@ public class AuthController {
         return ResponseEntity.ok(userInfo);
     }
 
-    /**
-     * Logout endpoint (client-side logout).
-     */
+    
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout() {
         Map<String, String> response = new HashMap<>();

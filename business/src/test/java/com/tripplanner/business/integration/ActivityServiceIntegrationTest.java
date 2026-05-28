@@ -36,17 +36,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * Integration tests for {@link ActivityService} backed by real repositories and an H2
- * in-memory database.
- * <p>
- * These tests exercise the full data-access plus business-logic flow for activity
- * creation, ensuring the activity is persisted in {@link ActivityRepository} and that
- * its location and category associations are wired up correctly through JPA.
- * </p>
- *
- * Validates: Requirements 4.1, 4.4, 4.6, 4.9
- */
+
 @SpringBootTest(classes = TestBusinessApplication.class)
 @Transactional
 @Tag("integration")
@@ -84,7 +74,7 @@ class ActivityServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Create and persist user
+        
         organizerUser = userRepository.save(Korisnik.builder()
                 .ime("Alice")
                 .prezime("Anderson")
@@ -93,7 +83,7 @@ class ActivityServiceIntegrationTest {
                 .oauthId("google-integration-1")
                 .build());
 
-        // Create and persist trip
+        
         testTrip = tripRepository.save(Putovanje.builder()
                 .naziv("Integration Test Trip")
                 .opis("Trip for activity integration tests")
@@ -102,14 +92,14 @@ class ActivityServiceIntegrationTest {
                 .ukTrosak(BigDecimal.ZERO)
                 .build());
 
-        // Create and persist participant (organizer) so authorization checks pass
+        
         participantRepository.save(Sudionik.builder()
                 .putovanje(testTrip)
                 .korisnik(organizerUser)
                 .uloga("organizer")
                 .build());
 
-        // Create and persist location
+        
         testLocation = locationRepository.save(Lokacija.builder()
                 .naziv("Eiffel Tower")
                 .adresa("Champ de Mars")
@@ -117,7 +107,7 @@ class ActivityServiceIntegrationTest {
                 .drzava("France")
                 .build());
 
-        // Create and persist categories
+        
         testCategory1 = categoryRepository.save(Kategorija.builder()
                 .naziv("Sightseeing")
                 .opis("Tourist attractions")
@@ -128,13 +118,13 @@ class ActivityServiceIntegrationTest {
                 .opis("Cultural activities")
                 .build());
 
-        // Flush so subsequent service calls run against persisted state
+        
         entityManager.flush();
     }
 
     @Test
     void createActivity_withValidData_persistsActivityInRepository() {
-        // Given
+        
         CreateActivityDTO createDTO = CreateActivityDTO.builder()
                 .naziv("Visit Eiffel Tower")
                 .opis("Morning visit to the Eiffel Tower")
@@ -144,21 +134,21 @@ class ActivityServiceIntegrationTest {
                 .categoryIds(Arrays.asList(testCategory1.getKategorijaId()))
                 .build();
 
-        // When
+        
         ActivityResponseDTO response = activityService.createActivity(
                 testTrip.getPutovanjeId(), organizerUser.getKorisnikId(), createDTO);
 
-        // Force flush and clear so we re-read from DB instead of the persistence context
+        
         entityManager.flush();
         entityManager.clear();
 
-        // Then - response reflects persisted activity
+        
         assertThat(response).isNotNull();
         assertThat(response.getAktivnostId()).isNotNull();
         assertThat(response.getNaziv()).isEqualTo("Visit Eiffel Tower");
         assertThat(response.getOpis()).isEqualTo("Morning visit to the Eiffel Tower");
 
-        // And the activity is actually persisted in the repository
+        
         Optional<Aktivnost> persistedOpt = activityRepository.findById(response.getAktivnostId());
         assertThat(persistedOpt).isPresent();
 
@@ -172,7 +162,7 @@ class ActivityServiceIntegrationTest {
 
     @Test
     void createActivity_withValidData_associatesLocationCorrectly() {
-        // Given
+        
         CreateActivityDTO createDTO = CreateActivityDTO.builder()
                 .naziv("Louvre Museum Tour")
                 .opis("Afternoon at the Louvre")
@@ -182,14 +172,14 @@ class ActivityServiceIntegrationTest {
                 .categoryIds(Collections.emptyList())
                 .build();
 
-        // When
+        
         ActivityResponseDTO response = activityService.createActivity(
                 testTrip.getPutovanjeId(), organizerUser.getKorisnikId(), createDTO);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then - response includes correct location
+        
         assertThat(response.getLocation()).isNotNull();
         assertThat(response.getLocation().getLokacijaId()).isEqualTo(testLocation.getLokacijaId());
         assertThat(response.getLocation().getNaziv()).isEqualTo("Eiffel Tower");
@@ -197,7 +187,7 @@ class ActivityServiceIntegrationTest {
         assertThat(response.getLocation().getGrad()).isEqualTo("Paris");
         assertThat(response.getLocation().getDrzava()).isEqualTo("France");
 
-        // And the persisted activity references the same location
+        
         Aktivnost persisted = activityRepository.findById(response.getAktivnostId()).orElseThrow();
         assertThat(persisted.getLokacija()).isNotNull();
         assertThat(persisted.getLokacija().getLokacijaId()).isEqualTo(testLocation.getLokacijaId());
@@ -206,7 +196,7 @@ class ActivityServiceIntegrationTest {
 
     @Test
     void createActivity_withMultipleCategories_associatesAllCategoriesCorrectly() {
-        // Given
+        
         CreateActivityDTO createDTO = CreateActivityDTO.builder()
                 .naziv("Cultural Walking Tour")
                 .opis("Guided cultural walking tour")
@@ -218,20 +208,20 @@ class ActivityServiceIntegrationTest {
                         testCategory2.getKategorijaId()))
                 .build();
 
-        // When
+        
         ActivityResponseDTO response = activityService.createActivity(
                 testTrip.getPutovanjeId(), organizerUser.getKorisnikId(), createDTO);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then - response carries both categories
+        
         assertThat(response.getCategories()).hasSize(2);
         assertThat(response.getCategories())
                 .extracting(c -> c.getNaziv())
                 .containsExactlyInAnyOrder("Sightseeing", "Culture");
 
-        // And the join table persisted both category associations
+        
         Aktivnost persisted = activityRepository.findById(response.getAktivnostId()).orElseThrow();
         assertThat(persisted.getCategories()).hasSize(2);
         assertThat(persisted.getCategories())
@@ -243,7 +233,7 @@ class ActivityServiceIntegrationTest {
 
     @Test
     void createActivity_withoutCategories_persistsActivityWithEmptyCategories() {
-        // Given
+        
         CreateActivityDTO createDTO = CreateActivityDTO.builder()
                 .naziv("Free Time")
                 .opis("Unstructured free time")
@@ -253,14 +243,14 @@ class ActivityServiceIntegrationTest {
                 .categoryIds(null)
                 .build();
 
-        // When
+        
         ActivityResponseDTO response = activityService.createActivity(
                 testTrip.getPutovanjeId(), organizerUser.getKorisnikId(), createDTO);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then
+        
         assertThat(response.getCategories()).isEmpty();
 
         Aktivnost persisted = activityRepository.findById(response.getAktivnostId()).orElseThrow();
@@ -271,7 +261,7 @@ class ActivityServiceIntegrationTest {
 
     @Test
     void createActivity_persistsActivityRetrievableViaCustomQuery() {
-        // Given
+        
         CreateActivityDTO createDTO = CreateActivityDTO.builder()
                 .naziv("Seine River Cruise")
                 .opis("Evening river cruise")
@@ -281,14 +271,14 @@ class ActivityServiceIntegrationTest {
                 .categoryIds(Arrays.asList(testCategory1.getKategorijaId()))
                 .build();
 
-        // When
+        
         activityService.createActivity(
                 testTrip.getPutovanjeId(), organizerUser.getKorisnikId(), createDTO);
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then - the activity shows up in the trip-scoped repository query
+        
         List<Aktivnost> tripActivities =
                 activityRepository.findByPutovanje_PutovanjeIdOrderByDatumVrijemePoc(
                         testTrip.getPutovanjeId());
@@ -304,7 +294,7 @@ class ActivityServiceIntegrationTest {
 
     @Test
     void createActivity_whenUserNotParticipant_doesNotPersistActivity() {
-        // Given - a different user not added as a participant
+        
         Korisnik outsider = userRepository.save(Korisnik.builder()
                 .ime("Bob")
                 .prezime("Outsider")
@@ -323,13 +313,13 @@ class ActivityServiceIntegrationTest {
                 .categoryIds(Arrays.asList(testCategory1.getKategorijaId()))
                 .build();
 
-        // When / Then - access denied for non-participant
+        
         assertThatThrownBy(() -> activityService.createActivity(
                 testTrip.getPutovanjeId(), outsider.getKorisnikId(), createDTO))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Access denied");
 
-        // And no activity was persisted
+        
         List<Aktivnost> tripActivities =
                 activityRepository.findByPutovanje_PutovanjeIdOrderByDatumVrijemePoc(
                         testTrip.getPutovanjeId());

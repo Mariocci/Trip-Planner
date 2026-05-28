@@ -28,30 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Unit tests for {@link AuthController}.
- *
- * <p>Verifies HTTP request handling, status codes, request/response JSON
- * serialization, and interactions with the underlying service layer.</p>
- *
- * <p>Note: The actual {@link AuthController} exposes the following endpoints:
- * <ul>
- *   <li>GET {@code /api/auth/config} - Returns Auth0 configuration</li>
- *   <li>GET {@code /api/auth/me} - Returns current authenticated user (auto-creates from Auth0)</li>
- *   <li>POST {@code /api/auth/logout} - Returns logout response</li>
- * </ul>
- * The task description references OAuth {@code initiate}/{@code callback} endpoints
- * which are handled at the Auth0 layer rather than via custom REST endpoints in this
- * application; therefore the tests below cover the endpoints actually exposed by
- * {@code AuthController}, exercising the behaviours required by Requirements
- * 3.1, 3.9, 3.10, 3.11, 3.12, 3.13.</p>
- *
- * <p>The {@code /api/auth/**} path is configured as {@code permitAll} in
- * {@link SecurityConfig}, but the {@code /me} endpoint requires a {@link
- * org.springframework.security.oauth2.jwt.Jwt} principal because of
- * {@code @AuthenticationPrincipal} - the test provides this via
- * {@code SecurityMockMvcRequestPostProcessors#jwt()}.</p>
- */
+
 @WebMvcTest(controllers = AuthController.class)
 @Import(SecurityConfig.class)
 @TestPropertySource(properties = {
@@ -67,15 +44,15 @@ class AuthControllerTest {
     @MockBean
     private UserService userService;
 
-    // The Spring Security OAuth2 Resource Server pulls in a JwtDecoder bean
-    // when an issuer-uri is configured. To avoid the test attempting to
-    // contact the real Auth0 issuer for JWKS, we mock it.
+    
+    
+    
     @MockBean
     private org.springframework.security.oauth2.jwt.JwtDecoder jwtDecoder;
 
-    // ------------------------------------------------------------------
-    // GET /api/auth/config
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("GET /api/auth/config")
@@ -104,9 +81,9 @@ class AuthControllerTest {
         }
     }
 
-    // ------------------------------------------------------------------
-    // GET /api/auth/me
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("GET /api/auth/me")
@@ -115,7 +92,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("returns 200 OK with user details when JWT is present")
         void getCurrentUser_withValidJwt_returnsOkWithUserInfo() throws Exception {
-            // Given
+            
             UserResponseDTO existingUser = UserResponseDTO.builder()
                     .korisnikId(42)
                     .ime("Jane")
@@ -131,7 +108,7 @@ class AuthControllerTest {
                     eq("https://example.com/avatar.png")))
                     .thenReturn(existingUser);
 
-            // When / Then
+            
             mockMvc.perform(get("/api/auth/me")
                             .with(jwt().jwt(builder -> builder
                                     .subject("auth0|abc123")
@@ -158,7 +135,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("auto-creates user when none exists for the JWT subject")
         void getCurrentUser_whenUserDoesNotExist_invokesFindOrCreateAndReturnsCreatedUser() throws Exception {
-            // Given - simulate findOrCreate returning a freshly-created user
+            
             UserResponseDTO createdUser = UserResponseDTO.builder()
                     .korisnikId(101)
                     .ime("New")
@@ -174,7 +151,7 @@ class AuthControllerTest {
                     eq("https://example.com/new.png")))
                     .thenReturn(createdUser);
 
-            // When / Then
+            
             mockMvc.perform(get("/api/auth/me")
                             .with(jwt().jwt(builder -> builder
                                     .subject("auth0|new-sub")
@@ -198,12 +175,12 @@ class AuthControllerTest {
         @Test
         @DisplayName("does not invoke UserService when JWT principal is absent")
         void getCurrentUser_withoutJwt_doesNotInvokeUserService() throws Exception {
-            // Note: SecurityConfig declares /api/auth/** as permitAll, so the security
-            // filter chain does NOT short-circuit unauthenticated requests with 401.
-            // The actual JWT-based 401 behaviour is exercised by full-stack integration
-            // tests where the OAuth2 resource server is wired against a real issuer.
-            // Here we only assert that without a Jwt principal the request never
-            // reaches UserService.findOrCreateUserFromAuth0(...).
+            
+            
+            
+            
+            
+            
             mockMvc.perform(get("/api/auth/me")
                     .contentType(MediaType.APPLICATION_JSON));
 
@@ -241,9 +218,9 @@ class AuthControllerTest {
         }
     }
 
-    // ------------------------------------------------------------------
-    // POST /api/auth/logout
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("POST /api/auth/logout")
@@ -264,7 +241,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("does not require authentication")
         void logout_withoutAuthentication_returnsOk() throws Exception {
-            // /api/auth/** is permitAll in SecurityConfig, so logout must succeed without a JWT.
+            
             mockMvc.perform(post("/api/auth/logout"))
                     .andExpect(status().isOk());
 

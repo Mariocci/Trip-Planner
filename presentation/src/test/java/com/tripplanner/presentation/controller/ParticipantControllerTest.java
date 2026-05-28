@@ -42,17 +42,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Unit tests for {@link ParticipantController} using MockMvc with a mocked
- * {@link ParticipantService}. Verifies HTTP status codes, JSON serialization /
- * deserialization, request validation, authorization (organizer-only
- * operations), and that the controller correctly delegates to the service
- * layer.
- *
- * <p>This test sets up MockMvc using {@link MockMvcBuilders#standaloneSetup}
- * so the test focuses on the controller and the global exception handler
- * without loading the full Spring context (or its security configuration).
- */
+
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ParticipantController Unit Tests")
 class ParticipantControllerTest extends ControllerTestBase {
@@ -77,7 +67,7 @@ class ParticipantControllerTest extends ControllerTestBase {
     void setUp() {
         participantController = new ParticipantController(participantService);
 
-        // Configure ObjectMapper to handle Java 8 date types (LocalDate)
+        
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -106,9 +96,9 @@ class ParticipantControllerTest extends ControllerTestBase {
                 .build();
     }
 
-    // ------------------------------------------------------------------
-    //  POST /api/trips/{tripId}/participants  (addParticipant)
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("POST /api/trips/{tripId}/participants")
@@ -137,7 +127,7 @@ class ParticipantControllerTest extends ControllerTestBase {
                     .andExpect(jsonPath("$.user.ime").value("Marko"))
                     .andExpect(jsonPath("$.user.prezime").value("Markovic"));
 
-            // Verify service interaction with correct DTO contents
+            
             ArgumentCaptor<AddParticipantDTO> captor = ArgumentCaptor.forClass(AddParticipantDTO.class);
             verify(participantService, times(1))
                     .addParticipant(eq(TRIP_ID), eq(ORGANIZER_ID), captor.capture());
@@ -149,7 +139,7 @@ class ParticipantControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("addParticipant_missingEmail_returns400BadRequest")
         void addParticipant_missingEmail_returns400BadRequest() throws Exception {
-            // email is @NotBlank
+            
             AddParticipantDTO request = AddParticipantDTO.builder()
                     .email(null)
                     .uloga("PARTICIPANT")
@@ -184,7 +174,7 @@ class ParticipantControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("addParticipant_invalidEmailFormat_returns400BadRequest")
         void addParticipant_invalidEmailFormat_returns400BadRequest() throws Exception {
-            // email must be @Email
+            
             AddParticipantDTO request = AddParticipantDTO.builder()
                     .email("not-an-email")
                     .uloga("PARTICIPANT")
@@ -202,7 +192,7 @@ class ParticipantControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("addParticipant_missingUloga_returns400BadRequest")
         void addParticipant_missingUloga_returns400BadRequest() throws Exception {
-            // uloga is @NotBlank
+            
             AddParticipantDTO request = AddParticipantDTO.builder()
                     .email("marko@example.com")
                     .uloga(null)
@@ -236,9 +226,9 @@ class ParticipantControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("addParticipant_nonOrganizerRequest_propagatesServiceError")
         void addParticipant_nonOrganizerRequest_propagatesServiceError() throws Exception {
-            // Authorization: only organizers may add participants. The service
-            // is responsible for enforcing this and the controller must
-            // surface the error from the service via the GlobalExceptionHandler.
+            
+            
+            
             AddParticipantDTO request = AddParticipantDTO.builder()
                     .email("marko@example.com")
                     .uloga("PARTICIPANT")
@@ -304,9 +294,9 @@ class ParticipantControllerTest extends ControllerTestBase {
         }
     }
 
-    // ------------------------------------------------------------------
-    //  GET /api/trips/{tripId}/participants  (listTripParticipants)
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("GET /api/trips/{tripId}/participants")
@@ -389,10 +379,10 @@ class ParticipantControllerTest extends ControllerTestBase {
         }
     }
 
-    // ------------------------------------------------------------------
-    //  PUT /api/trips/{tripId}/participants/{participantId}/role
-    //  (updateParticipantRole)
-    // ------------------------------------------------------------------
+    
+    
+    
+    
 
     @Nested
     @DisplayName("PUT /api/trips/{tripId}/participants/{participantId}/role")
@@ -442,7 +432,7 @@ class ParticipantControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateParticipantRole_missingUloga_returns400BadRequest")
         void updateParticipantRole_missingUloga_returns400BadRequest() throws Exception {
-            // uloga is @NotBlank
+            
             UpdateParticipantRoleDTO request = UpdateParticipantRoleDTO.builder()
                     .uloga(null)
                     .build();
@@ -535,10 +525,10 @@ class ParticipantControllerTest extends ControllerTestBase {
         }
     }
 
-    // ------------------------------------------------------------------
-    //  DELETE /api/trips/{tripId}/participants/{participantId}
-    //  (removeParticipant)
-    // ------------------------------------------------------------------
+    
+    
+    
+    
 
     @Nested
     @DisplayName("DELETE /api/trips/{tripId}/participants/{participantId}")
@@ -576,7 +566,7 @@ class ParticipantControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("removeParticipant_lastOrganizer_returns400BadRequest")
         void removeParticipant_lastOrganizer_returns400BadRequest() throws Exception {
-            // Business rule: cannot remove the last organizer of a trip.
+            
             doThrow(new IllegalArgumentException("Cannot remove the last organizer of a trip"))
                     .when(participantService).removeParticipant(PARTICIPANT_ID, ORGANIZER_ID);
 

@@ -54,27 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Integration test wiring {@link TripController} together with the real
- * {@link TripServiceImpl} while mocking the underlying repositories.
- *
- * <p>This test exercises the full request-response flow through the
- * controller and service layers, isolating only the data access layer.
- * The intent is to verify that authorization checks implemented in the
- * service are correctly triggered by HTTP requests, that organizer-only
- * operations reject requests from non-organizers, and that the request
- * payload submitted to the controller is correctly translated into
- * persistence calls by the service.</p>
- *
- * <p>Security filters and the OAuth2 resource server are excluded so the
- * tests can target authorization logic at the service layer rather than
- * Spring Security. Authorization in {@link TripServiceImpl} is implemented
- * by throwing {@link RuntimeException} with an "Access denied" message,
- * which the {@link GlobalExceptionHandler} maps to HTTP 500. That mapping
- * is the production behavior and is asserted here.</p>
- *
- * <p>Validates Requirements: 5.1, 5.2, 5.5, 5.6, 5.9</p>
- */
+
 @WebMvcTest(
         controllers = TripController.class,
         excludeAutoConfiguration = {
@@ -155,9 +135,9 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                 .build();
     }
 
-    // ---------------------------------------------------------------------
-    // Trip creation flow - controller -> real service -> mocked repositories
-    // ---------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("POST /api/trips - real service flow")
@@ -166,11 +146,11 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip persists trip and auto-adds creator as organizer")
         void createTrip_withValidRequest_persistsTripAndCreatesOrganizerParticipant() throws Exception {
-            // Given - the user creating the trip exists
+            
             when(userRepository.findById(ORGANIZER_USER_ID))
                     .thenReturn(Optional.of(organizerUser));
 
-            // The trip repository assigns an ID on save
+            
             when(tripRepository.save(any(Putovanje.class)))
                     .thenAnswer(invocation -> {
                         Putovanje p = invocation.getArgument(0);
@@ -178,11 +158,11 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                         return p;
                     });
 
-            // Saving the organizer participant returns the saved entity
+            
             when(participantRepository.save(any(Sudionik.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
-            // mapToResponseDTO queries the participant list to compute count
+            
             when(participantRepository.findByPutovanje_PutovanjeId(TRIP_ID))
                     .thenReturn(Arrays.asList(organizerParticipant));
 
@@ -193,7 +173,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .datumKraj(endDate)
                     .build();
 
-            // When / Then - HTTP 201 with the created trip in the body
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", ORGANIZER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -208,8 +188,8 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .andExpect(jsonPath("$.ukTrosak").value(0))
                     .andExpect(jsonPath("$.participantCount").value(1));
 
-            // Verify the real service flowed through: it saved the trip with the
-            // submitted fields and the initial total expense set to zero.
+            
+            
             ArgumentCaptor<Putovanje> tripCaptor = ArgumentCaptor.forClass(Putovanje.class);
             verify(tripRepository, times(1)).save(tripCaptor.capture());
             Putovanje savedTrip = tripCaptor.getValue();
@@ -219,7 +199,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
             assertThat(savedTrip.getDatumKraj()).isEqualTo(endDate);
             assertThat(savedTrip.getUkTrosak()).isEqualByComparingTo(BigDecimal.ZERO);
 
-            // Verify the creator was automatically added as an organizer.
+            
             ArgumentCaptor<Sudionik> participantCaptor = ArgumentCaptor.forClass(Sudionik.class);
             verify(participantRepository, times(1)).save(participantCaptor.capture());
             Sudionik savedOrganizer = participantCaptor.getValue();
@@ -233,8 +213,8 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip with end date before start date returns 400 Bad Request")
         void createTrip_withInvalidDateRange_returns400AndDoesNotPersist() throws Exception {
-            // Given - an invalid date range; no repository mocks needed because
-            // the real service rejects this before reaching persistence.
+            
+            
             CreateTripDTO invalid = CreateTripDTO.builder()
                     .naziv("Bad Trip")
                     .opis("End before start")
@@ -242,8 +222,8 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .datumKraj(LocalDate.of(2024, 6, 1))
                     .build();
 
-            // When / Then - the real service throws IllegalArgumentException, which
-            // GlobalExceptionHandler maps to HTTP 400 with the descriptive message.
+            
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", ORGANIZER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -253,8 +233,8 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .andExpect(jsonPath("$.message")
                             .value("End date must be after or equal to start date"));
 
-            // Nothing should have been persisted, and the user lookup is also
-            // never reached because the validation runs first.
+            
+            
             verifyNoInteractions(tripRepository);
             verifyNoInteractions(userRepository);
             verifyNoInteractions(participantRepository);
@@ -263,7 +243,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("createTrip when user does not exist returns 500 with 'User not found'")
         void createTrip_whenUserDoesNotExist_returns500() throws Exception {
-            // Given
+            
             when(userRepository.findById(ORGANIZER_USER_ID))
                     .thenReturn(Optional.empty());
 
@@ -274,8 +254,8 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .datumKraj(endDate)
                     .build();
 
-            // When / Then - service throws RuntimeException("User not found"),
-            // mapped to HTTP 500 by GlobalExceptionHandler.
+            
+            
             mockMvc.perform(post("/api/trips")
                             .param("userId", ORGANIZER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -283,15 +263,15 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.message").value("User not found"));
 
-            // Trip and participant were never saved.
+            
             verify(tripRepository, never()).save(any(Putovanje.class));
             verify(participantRepository, never()).save(any(Sudionik.class));
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Authorization checks - non-participants cannot view trips
-    // ---------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("Authorization checks - participant access")
@@ -300,7 +280,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("getTripById allows a participant to view trip details")
         void getTripById_asParticipant_returnsTripDetails() throws Exception {
-            // Given
+            
             when(tripRepository.findById(TRIP_ID))
                     .thenReturn(Optional.of(persistedTrip));
             when(participantRepository
@@ -309,7 +289,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
             when(participantRepository.findByPutovanje_PutovanjeId(TRIP_ID))
                     .thenReturn(Arrays.asList(organizerParticipant, regularParticipant));
 
-            // When / Then - 200 OK with body
+            
             mockMvc.perform(get("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", PARTICIPANT_USER_ID.toString()))
                     .andExpect(status().isOk())
@@ -318,7 +298,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .andExpect(jsonPath("$.naziv").value("Paris Trip"))
                     .andExpect(jsonPath("$.participantCount").value(2));
 
-            // Verify the authorization lookup occurred at the service layer
+            
             verify(participantRepository, times(1))
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, PARTICIPANT_USER_ID);
         }
@@ -326,23 +306,23 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("getTripById blocks a non-participant with 'Access denied'")
         void getTripById_asNonParticipant_returns500WithAccessDenied() throws Exception {
-            // Given - the trip exists, but the requesting user is not a
-            // participant of it.
+            
+            
             when(tripRepository.findById(TRIP_ID))
                     .thenReturn(Optional.of(persistedTrip));
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, NON_PARTICIPANT_USER_ID))
                     .thenReturn(Optional.empty());
 
-            // When / Then - service throws RuntimeException("Access denied: ...")
-            // which maps to 500 in the production GlobalExceptionHandler.
+            
+            
             mockMvc.perform(get("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", NON_PARTICIPANT_USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.message")
                             .value("Access denied: User is not a participant of this trip"));
 
-            // The authorization lookup must have happened at the service layer.
+            
             verify(participantRepository, times(1))
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, NON_PARTICIPANT_USER_ID);
         }
@@ -350,17 +330,17 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("getTripById returns 500 when trip does not exist")
         void getTripById_whenTripNotFound_returns500() throws Exception {
-            // Given
+            
             when(tripRepository.findById(TRIP_ID))
                     .thenReturn(Optional.empty());
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", PARTICIPANT_USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.message").value("Trip not found"));
 
-            // Service short-circuits on missing trip: participant lookup not invoked.
+            
             verify(participantRepository, never())
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(anyInt(), anyInt());
         }
@@ -368,14 +348,14 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("listUserTrips returns only trips where user participates")
         void listUserTrips_returnsTripsWhereUserIsParticipant() throws Exception {
-            // Given
+            
             when(tripRepository
                     .findByParticipants_Korisnik_KorisnikIdOrderByDatumPocDesc(PARTICIPANT_USER_ID))
                     .thenReturn(Arrays.asList(persistedTrip));
             when(participantRepository.findByPutovanje_PutovanjeId(TRIP_ID))
                     .thenReturn(Arrays.asList(organizerParticipant, regularParticipant));
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips")
                             .param("userId", PARTICIPANT_USER_ID.toString()))
                     .andExpect(status().isOk())
@@ -390,12 +370,12 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("listUserTrips for a user with no trips returns empty list")
         void listUserTrips_forUserWithNoTrips_returnsEmptyList() throws Exception {
-            // Given
+            
             when(tripRepository
                     .findByParticipants_Korisnik_KorisnikIdOrderByDatumPocDesc(NON_PARTICIPANT_USER_ID))
                     .thenReturn(Collections.emptyList());
 
-            // When / Then
+            
             mockMvc.perform(get("/api/trips")
                             .param("userId", NON_PARTICIPANT_USER_ID.toString()))
                     .andExpect(status().isOk())
@@ -404,9 +384,9 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Organizer-only operations - update and delete
-    // ---------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("Organizer-only operations - update and delete")
@@ -415,7 +395,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("updateTrip succeeds when requester is an organizer")
         void updateTrip_asOrganizer_returns200WithUpdatedBody() throws Exception {
-            // Given - the requester is an organizer
+            
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, ORGANIZER_USER_ID))
                     .thenReturn(Optional.of(organizerParticipant));
@@ -431,7 +411,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .opis("Updated description")
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", ORGANIZER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -441,7 +421,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .andExpect(jsonPath("$.naziv").value("Renamed Paris Trip"))
                     .andExpect(jsonPath("$.opis").value("Updated description"));
 
-            // Verify persistence happened
+            
             ArgumentCaptor<Putovanje> tripCaptor = ArgumentCaptor.forClass(Putovanje.class);
             verify(tripRepository, times(1)).save(tripCaptor.capture());
             assertThat(tripCaptor.getValue().getNaziv()).isEqualTo("Renamed Paris Trip");
@@ -451,7 +431,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("updateTrip rejects a regular participant with 'Access denied'")
         void updateTrip_asRegularParticipant_returns500AndDoesNotPersist() throws Exception {
-            // Given - the requester is a participant but NOT an organizer
+            
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, PARTICIPANT_USER_ID))
                     .thenReturn(Optional.of(regularParticipant));
@@ -460,7 +440,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .naziv("Sneaky update")
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", PARTICIPANT_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -469,7 +449,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .andExpect(jsonPath("$.message")
                             .value("Access denied: Only organizers can update trips"));
 
-            // Authorization lookup occurred but no persistence call was made.
+            
             verify(participantRepository, times(1))
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, PARTICIPANT_USER_ID);
             verify(tripRepository, never()).save(any(Putovanje.class));
@@ -479,8 +459,8 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("updateTrip rejects a non-participant with 'Access denied'")
         void updateTrip_asNonParticipant_returns500AndDoesNotPersist() throws Exception {
-            // Given - the requester is not a participant at all (so isUserOrganizer
-            // returns false based on Optional.empty()).
+            
+            
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, NON_PARTICIPANT_USER_ID))
                     .thenReturn(Optional.empty());
@@ -489,7 +469,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .naziv("Outsider update")
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", NON_PARTICIPANT_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -504,7 +484,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("updateTrip with end date before start date returns 400 Bad Request")
         void updateTrip_withInvalidDateRange_returns400AndDoesNotPersist() throws Exception {
-            // Given - organizer makes an invalid update
+            
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, ORGANIZER_USER_ID))
                     .thenReturn(Optional.of(organizerParticipant));
@@ -516,7 +496,7 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .datumKraj(LocalDate.of(2024, 6, 5))
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(put("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", ORGANIZER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -526,19 +506,19 @@ class TripControllerIntegrationTest extends ControllerTestBase {
                     .andExpect(jsonPath("$.message")
                             .value("End date must be after or equal to start date"));
 
-            // Trip was loaded but never saved (validation rejected the update).
+            
             verify(tripRepository, never()).save(any(Putovanje.class));
         }
 
         @Test
         @DisplayName("deleteTrip succeeds when requester is an organizer")
         void deleteTrip_asOrganizer_returns204AndDeletes() throws Exception {
-            // Given
+            
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, ORGANIZER_USER_ID))
                     .thenReturn(Optional.of(organizerParticipant));
 
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", ORGANIZER_USER_ID.toString()))
                     .andExpect(status().isNoContent());
@@ -549,12 +529,12 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteTrip rejects a regular participant with 'Access denied'")
         void deleteTrip_asRegularParticipant_returns500AndDoesNotDelete() throws Exception {
-            // Given
+            
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, PARTICIPANT_USER_ID))
                     .thenReturn(Optional.of(regularParticipant));
 
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", PARTICIPANT_USER_ID.toString()))
                     .andExpect(status().isInternalServerError())
@@ -567,12 +547,12 @@ class TripControllerIntegrationTest extends ControllerTestBase {
         @Test
         @DisplayName("deleteTrip rejects a non-participant with 'Access denied'")
         void deleteTrip_asNonParticipant_returns500AndDoesNotDelete() throws Exception {
-            // Given
+            
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, NON_PARTICIPANT_USER_ID))
                     .thenReturn(Optional.empty());
 
-            // When / Then
+            
             mockMvc.perform(delete("/api/trips/{tripId}", TRIP_ID)
                             .param("userId", NON_PARTICIPANT_USER_ID.toString()))
                     .andExpect(status().isInternalServerError())

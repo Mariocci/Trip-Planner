@@ -6,9 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Entity representing a location (Lokacija).
- */
+
 @Entity
 @Table(name = "LOKACIJA")
 @Data

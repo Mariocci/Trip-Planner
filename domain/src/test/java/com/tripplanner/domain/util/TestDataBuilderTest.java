@@ -9,17 +9,15 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Test class to verify TestDataBuilder fluent API works correctly.
- */
+
 class TestDataBuilderTest {
 
     @Test
     void userBuilder_shouldBuildUserWithDefaultValues() {
-        // When
+        
         Korisnik user = TestDataBuilder.user().build();
 
-        // Then
+        
         assertThat(user).isNotNull();
         assertThat(user.getIme()).isEqualTo("John");
         assertThat(user.getPrezime()).isEqualTo("Doe");
@@ -28,7 +26,7 @@ class TestDataBuilderTest {
 
     @Test
     void userBuilder_shouldBuildUserWithCustomValues() {
-        // When
+        
         Korisnik user = TestDataBuilder.user()
                 .withId(5)
                 .withName("Alice", "Smith")
@@ -36,7 +34,7 @@ class TestDataBuilderTest {
                 .withOAuthProvider("github", "github-456")
                 .build();
 
-        // Then
+        
         assertThat(user.getKorisnikId()).isEqualTo(5);
         assertThat(user.getIme()).isEqualTo("Alice");
         assertThat(user.getPrezime()).isEqualTo("Smith");
@@ -47,10 +45,10 @@ class TestDataBuilderTest {
 
     @Test
     void tripBuilder_shouldBuildTripWithDefaultValues() {
-        // When
+        
         Putovanje trip = TestDataBuilder.trip().build();
 
-        // Then
+        
         assertThat(trip).isNotNull();
         assertThat(trip.getNaziv()).isEqualTo("Test Trip");
         assertThat(trip.getUkTrosak()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -58,11 +56,11 @@ class TestDataBuilderTest {
 
     @Test
     void tripBuilder_shouldBuildTripWithCustomValues() {
-        // Given
+        
         LocalDate startDate = LocalDate.of(2024, 6, 1);
         LocalDate endDate = LocalDate.of(2024, 6, 10);
 
-        // When
+        
         Putovanje trip = TestDataBuilder.trip()
                 .withId(10)
                 .withName("Paris Trip")
@@ -71,7 +69,7 @@ class TestDataBuilderTest {
                 .withTotalExpense(new BigDecimal("1500.00"))
                 .build();
 
-        // Then
+        
         assertThat(trip.getPutovanjeId()).isEqualTo(10);
         assertThat(trip.getNaziv()).isEqualTo("Paris Trip");
         assertThat(trip.getOpis()).isEqualTo("A wonderful trip to Paris");
@@ -82,10 +80,10 @@ class TestDataBuilderTest {
 
     @Test
     void expenseBuilder_shouldBuildExpenseWithDefaultValues() {
-        // When
+        
         Trosak expense = TestDataBuilder.expense().build();
 
-        // Then
+        
         assertThat(expense).isNotNull();
         assertThat(expense.getIznos()).isEqualByComparingTo(new BigDecimal("100.00"));
         assertThat(expense.getOpis()).isEqualTo("Test expense");
@@ -93,11 +91,11 @@ class TestDataBuilderTest {
 
     @Test
     void expenseBuilder_shouldBuildExpenseWithCustomValues() {
-        // Given
+        
         Putovanje trip = TestDataBuilder.trip().withId(1).build();
         LocalDate date = LocalDate.of(2024, 6, 5);
 
-        // When
+        
         Trosak expense = TestDataBuilder.expense()
                 .withId(20)
                 .withAmount("250.50")
@@ -106,7 +104,7 @@ class TestDataBuilderTest {
                 .withTrip(trip)
                 .build();
 
-        // Then
+        
         assertThat(expense.getTrosakId()).isEqualTo(20);
         assertThat(expense.getIznos()).isEqualByComparingTo(new BigDecimal("250.50"));
         assertThat(expense.getOpis()).isEqualTo("Hotel accommodation");
@@ -116,11 +114,11 @@ class TestDataBuilderTest {
 
     @Test
     void participantBuilder_shouldBuildParticipantAsOrganizer() {
-        // Given
+        
         Korisnik user = TestDataBuilder.user().withId(1).build();
         Putovanje trip = TestDataBuilder.trip().withId(1).build();
 
-        // When
+        
         Sudionik participant = TestDataBuilder.participant()
                 .withId(1)
                 .asOrganizer()
@@ -128,7 +126,7 @@ class TestDataBuilderTest {
                 .withTrip(trip)
                 .build();
 
-        // Then
+        
         assertThat(participant.getSudionikId()).isEqualTo(1);
         assertThat(participant.getUloga()).isEqualTo("organizer");
         assertThat(participant.getKorisnik()).isEqualTo(user);
@@ -137,7 +135,7 @@ class TestDataBuilderTest {
 
     @Test
     void locationBuilder_shouldBuildLocationWithCustomValues() {
-        // When
+        
         Lokacija location = TestDataBuilder.location()
                 .withId(5)
                 .withName("Eiffel Tower")
@@ -146,7 +144,7 @@ class TestDataBuilderTest {
                 .withCountry("France")
                 .build();
 
-        // Then
+        
         assertThat(location.getLokacijaId()).isEqualTo(5);
         assertThat(location.getNaziv()).isEqualTo("Eiffel Tower");
         assertThat(location.getAdresa()).isEqualTo("Champ de Mars");
@@ -156,14 +154,14 @@ class TestDataBuilderTest {
 
     @Test
     void categoryBuilder_shouldBuildCategoryWithCustomValues() {
-        // When
+        
         Kategorija category = TestDataBuilder.category()
                 .withId(3)
                 .withName("Sightseeing")
                 .withDescription("Tourist attractions")
                 .build();
 
-        // Then
+        
         assertThat(category.getKategorijaId()).isEqualTo(3);
         assertThat(category.getNaziv()).isEqualTo("Sightseeing");
         assertThat(category.getOpis()).isEqualTo("Tourist attractions");
@@ -171,13 +169,13 @@ class TestDataBuilderTest {
 
     @Test
     void activityBuilder_shouldBuildActivityWithCustomValues() {
-        // Given
+        
         Putovanje trip = TestDataBuilder.trip().withId(1).build();
         Lokacija location = TestDataBuilder.location().withId(1).build();
         LocalDateTime startTime = LocalDateTime.of(2024, 6, 5, 10, 0);
         LocalDateTime endTime = LocalDateTime.of(2024, 6, 5, 12, 0);
 
-        // When
+        
         Aktivnost activity = TestDataBuilder.activity()
                 .withId(15)
                 .withName("Visit Eiffel Tower")
@@ -187,7 +185,7 @@ class TestDataBuilderTest {
                 .withLocation(location)
                 .build();
 
-        // Then
+        
         assertThat(activity.getAktivnostId()).isEqualTo(15);
         assertThat(activity.getNaziv()).isEqualTo("Visit Eiffel Tower");
         assertThat(activity.getOpis()).isEqualTo("Tour the iconic landmark");

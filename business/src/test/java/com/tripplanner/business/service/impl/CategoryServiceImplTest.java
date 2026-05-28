@@ -18,10 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for {@link CategoryServiceImpl}.
- * Tests category creation, retrieval, name uniqueness validation, and error handling.
- */
+
 class CategoryServiceImplTest extends ServiceTestBase {
 
     @Mock
@@ -39,17 +36,17 @@ class CategoryServiceImplTest extends ServiceTestBase {
         testCategory2 = createTestCategory(2, "Food & Dining");
     }
 
-    // ========== Category Retrieval Tests ==========
+    
 
     @Test
     void listAllCategories_WithExistingCategories_ShouldReturnAllCategories() {
-        // Given
+        
         when(categoryRepository.findAll()).thenReturn(Arrays.asList(testCategory1, testCategory2));
 
-        // When
+        
         List<CategoryResponseDTO> result = categoryService.listAllCategories();
 
-        // Then
+        
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getKategorijaId()).isEqualTo(1);
@@ -63,13 +60,13 @@ class CategoryServiceImplTest extends ServiceTestBase {
 
     @Test
     void listAllCategories_WithNoCategories_ShouldReturnEmptyList() {
-        // Given
+        
         when(categoryRepository.findAll()).thenReturn(Collections.emptyList());
 
-        // When
+        
         List<CategoryResponseDTO> result = categoryService.listAllCategories();
 
-        // Then
+        
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
 
@@ -79,13 +76,13 @@ class CategoryServiceImplTest extends ServiceTestBase {
 
     @Test
     void getCategoryById_WithValidId_ShouldReturnCategory() {
-        // Given
+        
         when(categoryRepository.findById(1)).thenReturn(Optional.of(testCategory1));
 
-        // When
+        
         CategoryResponseDTO result = categoryService.getCategoryById(1);
 
-        // Then
+        
         assertThat(result).isNotNull();
         assertThat(result.getKategorijaId()).isEqualTo(1);
         assertThat(result.getNaziv()).isEqualTo("Sightseeing");
@@ -97,10 +94,10 @@ class CategoryServiceImplTest extends ServiceTestBase {
 
     @Test
     void getCategoryById_WithNonExistentId_ShouldThrowException() {
-        // Given
+        
         when(categoryRepository.findById(999)).thenReturn(Optional.empty());
 
-        // When/Then
+        
         assertThatThrownBy(() -> categoryService.getCategoryById(999))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Category not found");
@@ -111,10 +108,10 @@ class CategoryServiceImplTest extends ServiceTestBase {
 
     @Test
     void getCategoryById_WithNullId_ShouldThrowException() {
-        // Given
+        
         when(categoryRepository.findById(null)).thenReturn(Optional.empty());
 
-        // When/Then
+        
         assertThatThrownBy(() -> categoryService.getCategoryById(null))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Category not found");
@@ -123,25 +120,25 @@ class CategoryServiceImplTest extends ServiceTestBase {
         verifyNoMoreInteractions(categoryRepository);
     }
 
-    // ========== Category Name Uniqueness Tests ==========
+    
 
     @Test
     void listAllCategories_ShouldReturnCategoriesWithUniqueNames() {
-        // Given
+        
         Kategorija category1 = createTestCategory(1, "Unique Name 1");
         Kategorija category2 = createTestCategory(2, "Unique Name 2");
         Kategorija category3 = createTestCategory(3, "Unique Name 3");
 
         when(categoryRepository.findAll()).thenReturn(Arrays.asList(category1, category2, category3));
 
-        // When
+        
         List<CategoryResponseDTO> result = categoryService.listAllCategories();
 
-        // Then
+        
         assertThat(result).isNotNull();
         assertThat(result).hasSize(3);
         
-        // Verify all names are unique
+        
         List<String> names = result.stream()
                 .map(CategoryResponseDTO::getNaziv)
                 .toList();
@@ -152,11 +149,11 @@ class CategoryServiceImplTest extends ServiceTestBase {
         verifyNoMoreInteractions(categoryRepository);
     }
 
-    // ========== DTO Mapping Tests ==========
+    
 
     @Test
     void getCategoryById_ShouldMapAllFieldsCorrectly() {
-        // Given
+        
         Kategorija category = Kategorija.builder()
                 .kategorijaId(10)
                 .naziv("Adventure")
@@ -165,10 +162,10 @@ class CategoryServiceImplTest extends ServiceTestBase {
 
         when(categoryRepository.findById(10)).thenReturn(Optional.of(category));
 
-        // When
+        
         CategoryResponseDTO result = categoryService.getCategoryById(10);
 
-        // Then
+        
         assertThat(result).isNotNull();
         assertThat(result.getKategorijaId()).isEqualTo(10);
         assertThat(result.getNaziv()).isEqualTo("Adventure");
@@ -180,7 +177,7 @@ class CategoryServiceImplTest extends ServiceTestBase {
 
     @Test
     void listAllCategories_ShouldMapAllFieldsCorrectly() {
-        // Given
+        
         Kategorija category1 = Kategorija.builder()
                 .kategorijaId(1)
                 .naziv("Culture")
@@ -195,10 +192,10 @@ class CategoryServiceImplTest extends ServiceTestBase {
 
         when(categoryRepository.findAll()).thenReturn(Arrays.asList(category1, category2));
 
-        // When
+        
         List<CategoryResponseDTO> result = categoryService.listAllCategories();
 
-        // Then
+        
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
 
@@ -216,14 +213,14 @@ class CategoryServiceImplTest extends ServiceTestBase {
         verifyNoMoreInteractions(categoryRepository);
     }
 
-    // ========== Edge Case Tests ==========
+    
 
     @Test
     void getCategoryById_WithZeroId_ShouldAttemptToFindCategory() {
-        // Given
+        
         when(categoryRepository.findById(0)).thenReturn(Optional.empty());
 
-        // When/Then
+        
         assertThatThrownBy(() -> categoryService.getCategoryById(0))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Category not found");
@@ -234,10 +231,10 @@ class CategoryServiceImplTest extends ServiceTestBase {
 
     @Test
     void getCategoryById_WithNegativeId_ShouldAttemptToFindCategory() {
-        // Given
+        
         when(categoryRepository.findById(-1)).thenReturn(Optional.empty());
 
-        // When/Then
+        
         assertThatThrownBy(() -> categoryService.getCategoryById(-1))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Category not found");
@@ -248,13 +245,13 @@ class CategoryServiceImplTest extends ServiceTestBase {
 
     @Test
     void listAllCategories_WithSingleCategory_ShouldReturnSingleElementList() {
-        // Given
+        
         when(categoryRepository.findAll()).thenReturn(Collections.singletonList(testCategory1));
 
-        // When
+        
         List<CategoryResponseDTO> result = categoryService.listAllCategories();
 
-        // Then
+        
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getKategorijaId()).isEqualTo(1);
@@ -264,45 +261,45 @@ class CategoryServiceImplTest extends ServiceTestBase {
         verifyNoMoreInteractions(categoryRepository);
     }
 
-    // ========== Mock Interaction Verification Tests ==========
+    
 
     @Test
     void getCategoryById_ShouldCallRepositoryOnce() {
-        // Given
+        
         when(categoryRepository.findById(1)).thenReturn(Optional.of(testCategory1));
 
-        // When
+        
         categoryService.getCategoryById(1);
 
-        // Then
+        
         verify(categoryRepository, times(1)).findById(1);
         verifyNoMoreInteractions(categoryRepository);
     }
 
     @Test
     void listAllCategories_ShouldCallRepositoryOnce() {
-        // Given
+        
         when(categoryRepository.findAll()).thenReturn(Arrays.asList(testCategory1, testCategory2));
 
-        // When
+        
         categoryService.listAllCategories();
 
-        // Then
+        
         verify(categoryRepository, times(1)).findAll();
         verifyNoMoreInteractions(categoryRepository);
     }
 
     @Test
     void getCategoryById_WithMultipleCalls_ShouldCallRepositoryMultipleTimes() {
-        // Given
+        
         when(categoryRepository.findById(1)).thenReturn(Optional.of(testCategory1));
         when(categoryRepository.findById(2)).thenReturn(Optional.of(testCategory2));
 
-        // When
+        
         categoryService.getCategoryById(1);
         categoryService.getCategoryById(2);
 
-        // Then
+        
         verify(categoryRepository).findById(1);
         verify(categoryRepository).findById(2);
         verifyNoMoreInteractions(categoryRepository);

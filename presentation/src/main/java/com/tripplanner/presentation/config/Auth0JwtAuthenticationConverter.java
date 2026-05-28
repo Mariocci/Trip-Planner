@@ -11,10 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-/**
- * Converts Auth0 JWT tokens to Spring Security Authentication objects.
- * Extracts user information and authorities from the JWT claims.
- */
+
 public class Auth0JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     @Override
@@ -23,10 +20,7 @@ public class Auth0JwtAuthenticationConverter implements Converter<Jwt, AbstractA
         return new JwtAuthenticationToken(jwt, authorities, extractUsername(jwt));
     }
 
-    /**
-     * Extracts username from JWT token.
-     * Tries 'email' claim first, falls back to 'sub' (subject).
-     */
+    
     private String extractUsername(Jwt jwt) {
         if (jwt.hasClaim("email")) {
             return jwt.getClaimAsString("email");
@@ -34,12 +28,9 @@ public class Auth0JwtAuthenticationConverter implements Converter<Jwt, AbstractA
         return jwt.getSubject();
     }
 
-    /**
-     * Extracts authorities/roles from JWT token.
-     * Auth0 stores permissions in different claim formats depending on configuration.
-     */
+    
     private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-        // Check for permissions in Auth0 format
+        
         if (jwt.hasClaim("permissions")) {
             Collection<String> permissions = jwt.getClaimAsStringList("permissions");
             if (permissions != null) {
@@ -49,7 +40,7 @@ public class Auth0JwtAuthenticationConverter implements Converter<Jwt, AbstractA
             }
         }
 
-        // Check for roles in custom namespace
+        
         String namespace = "https://tripplanner.com/";
         if (jwt.hasClaim(namespace + "roles")) {
             Collection<String> roles = jwt.getClaimAsStringList(namespace + "roles");
@@ -60,7 +51,7 @@ public class Auth0JwtAuthenticationConverter implements Converter<Jwt, AbstractA
             }
         }
 
-        // Default: grant basic user authority
+        
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
     }
 }

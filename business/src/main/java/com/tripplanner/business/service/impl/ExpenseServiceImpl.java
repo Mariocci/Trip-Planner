@@ -15,9 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of {@link ExpenseService}.
- */
+
 @Service
 @Transactional
 public class ExpenseServiceImpl implements ExpenseService {
@@ -52,7 +50,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         expense = expenseRepository.save(expense);
         
-        // Recalculate trip total expense
+        
         tripService.recalculateTotalExpense(tripId);
 
         return mapToResponseDTO(expense);
@@ -105,7 +103,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         expense = expenseRepository.save(expense);
         
-        // Recalculate trip total expense
+        
         tripService.recalculateTotalExpense(expense.getPutovanje().getPutovanjeId());
 
         return mapToResponseDTO(expense);
@@ -123,7 +121,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         Integer tripId = expense.getPutovanje().getPutovanjeId();
         expenseRepository.delete(expense);
         
-        // Recalculate trip total expense
+        
         tripService.recalculateTotalExpense(tripId);
     }
 

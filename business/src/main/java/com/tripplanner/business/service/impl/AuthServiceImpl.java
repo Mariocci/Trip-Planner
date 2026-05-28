@@ -15,9 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Optional;
 
-/**
- * Implementation of {@link AuthService} for authentication and authorization.
- */
+
 @Service
 @Transactional
 public class AuthServiceImpl implements AuthService {
@@ -39,8 +37,8 @@ public class AuthServiceImpl implements AuthService {
     public String initiateOAuthFlow(String provider) {
         validateProvider(provider);
         
-        // In a real implementation, this would construct the OAuth authorization URL
-        // For now, return a placeholder
+        
+        
         return "https://" + provider + ".com/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI";
     }
 
@@ -48,12 +46,12 @@ public class AuthServiceImpl implements AuthService {
     public Korisnik handleOAuthCallback(String code, String provider) {
         validateProvider(provider);
         
-        // In a real implementation, this would:
-        // 1. Exchange code for access token
-        // 2. Fetch user info from OAuth provider
-        // 3. Create or update user
         
-        // For now, throw an exception indicating this needs OAuth configuration
+        
+        
+        
+        
+        
         throw new UnsupportedOperationException(
             "OAuth callback handling requires OAuth provider configuration. " +
             "Please configure OAuth client credentials in application.properties"
@@ -73,18 +71,18 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("OAuth ID cannot be null or empty");
         }
 
-        // Check if user exists by OAuth provider and ID
+        
         Optional<Korisnik> existingUser = userRepository.findByOauthProviderAndOauthId(provider, oauthId);
         
         if (existingUser.isPresent()) {
-            // Update existing user
+            
             Korisnik user = existingUser.get();
             user.setIme(firstName);
             user.setPrezime(lastName);
             user.setEmail(email);
             return userRepository.save(user);
         } else {
-            // Create new user
+            
             Korisnik newUser = Korisnik.builder()
                     .ime(firstName)
                     .prezime(lastName)

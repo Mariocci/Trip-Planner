@@ -29,16 +29,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * Integration tests for {@link ParticipantService} backed by real repositories and
- * an H2 in-memory database.
- *
- * <p>Focuses on the last-organizer protection business rule: when a trip has a single
- * organizer, attempts to remove that organizer (or demote them via role update) must
- * fail and the organizer must remain persisted in {@link ParticipantRepository}.</p>
- *
- * <p>Validates Requirements: 4.1, 4.5, 4.6, 4.9</p>
- */
+
 @SpringBootTest(classes = TestBusinessApplication.class)
 @Transactional
 @DisplayName("ParticipantService Integration Tests")
@@ -66,7 +57,7 @@ class ParticipantServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Persist the user that will be the sole organizer of the trip.
+        
         organizerUser = userRepository.save(Korisnik.builder()
                 .ime("Solo")
                 .prezime("Organizer")
@@ -75,7 +66,7 @@ class ParticipantServiceIntegrationTest {
                 .oauthId("google-solo-organizer")
                 .build());
 
-        // Persist the trip itself.
+        
         testTrip = tripRepository.save(Putovanje.builder()
                 .naziv("Solo Organizer Trip")
                 .opis("Trip used for last-organizer protection integration tests")
@@ -84,37 +75,37 @@ class ParticipantServiceIntegrationTest {
                 .ukTrosak(BigDecimal.ZERO)
                 .build());
 
-        // Persist the organizer participant linking user to trip with role "organizer".
+        
         organizerParticipant = participantRepository.save(Sudionik.builder()
                 .uloga("organizer")
                 .putovanje(testTrip)
                 .korisnik(organizerUser)
                 .build());
 
-        // Flush so the service operates against persisted state.
+        
         entityManager.flush();
     }
 
-    // ========== Requirement 4.5: Last-organizer deletion protection ==========
+    
 
     @Test
     @DisplayName("removeParticipant rejects removal of the last organizer with descriptive exception")
     void removeParticipant_lastOrganizer_throwsAndDoesNotDelete() {
-        // Sanity check: there is exactly one organizer for this trip.
+        
         assertThat(participantRepository.countOrganizersByPutovanjeId(testTrip.getPutovanjeId()))
                 .isEqualTo(1L);
 
-        // When / Then - attempt to remove the only organizer fails with a descriptive message.
+        
         assertThatThrownBy(() -> participantService.removeParticipant(
                 organizerParticipant.getSudionikId(), organizerUser.getKorisnikId()))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Cannot remove the last organizer");
 
-        // Force a fresh read from the database rather than the persistence context.
+        
         entityManager.flush();
         entityManager.clear();
 
-        // The organizer participant must still exist in ParticipantRepository.
+        
         Optional<Sudionik> persisted =
                 participantRepository.findById(organizerParticipant.getSudionikId());
         assertThat(persisted).isPresent();
@@ -128,7 +119,7 @@ class ParticipantServiceIntegrationTest {
     @Test
     @DisplayName("removeParticipant on last organizer leaves organizer count unchanged")
     void removeParticipant_lastOrganizer_organizerCountUnchanged() {
-        // When - attempt to remove the only organizer (expected to fail).
+        
         assertThatThrownBy(() -> participantService.removeParticipant(
                 organizerParticipant.getSudionikId(), organizerUser.getKorisnikId()))
                 .isInstanceOf(RuntimeException.class)
@@ -137,12 +128,12 @@ class ParticipantServiceIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // Then - the organizer count is still exactly 1 in the database.
+        
         Long organizerCount =
                 participantRepository.countOrganizersByPutovanjeId(testTrip.getPutovanjeId());
         assertThat(organizerCount).isEqualTo(1L);
 
-        // And the trip still has exactly one participant overall.
+        
         List<Sudionik> participants =
                 participantRepository.findByPutovanje_PutovanjeId(testTrip.getPutovanjeId());
         assertThat(participants).hasSize(1);
@@ -152,12 +143,12 @@ class ParticipantServiceIntegrationTest {
     @Test
     @DisplayName("updateParticipantRole rejects demoting the last organizer and preserves role")
     void updateParticipantRole_demoteLastOrganizer_throwsAndPreservesOrganizerRole() {
-        // Given - request to demote the only organizer to a regular participant.
+        
         UpdateParticipantRoleDTO demoteDTO = UpdateParticipantRoleDTO.builder()
                 .uloga("participant")
                 .build();
 
-        // When / Then - operation must fail.
+        
         assertThatThrownBy(() -> participantService.updateParticipantRole(
                 organizerParticipant.getSudionikId(), organizerUser.getKorisnikId(), demoteDTO))
                 .isInstanceOf(RuntimeException.class)
@@ -166,7 +157,7 @@ class ParticipantServiceIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // Then - the organizer's role is still "organizer" in the database.
+        
         Sudionik persisted = participantRepository.findById(organizerParticipant.getSudionikId())
                 .orElseThrow();
         assertThat(persisted.getUloga()).isEqualTo("organizer");
@@ -174,12 +165,12 @@ class ParticipantServiceIntegrationTest {
                 .isEqualTo(1L);
     }
 
-    // ========== Sanity check: removal works once a second organizer exists ==========
+    
 
     @Test
     @DisplayName("removeParticipant succeeds for an organizer when more than one organizer exists")
     void removeParticipant_organizerWithMultipleOrganizers_removesSuccessfully() {
-        // Given - add a second organizer to the trip via the service.
+        
         Korisnik secondOrganizerUser = userRepository.save(Korisnik.builder()
                 .ime("Second")
                 .prezime("Organizer")
@@ -201,14 +192,14 @@ class ParticipantServiceIntegrationTest {
         assertThat(participantRepository.countOrganizersByPutovanjeId(testTrip.getPutovanjeId()))
                 .isEqualTo(2L);
 
-        // When - remove the original organizer (should succeed because another organizer exists).
+        
         participantService.removeParticipant(
                 organizerParticipant.getSudionikId(), secondOrganizerUser.getKorisnikId());
 
         entityManager.flush();
         entityManager.clear();
 
-        // Then - original organizer is gone, second organizer remains.
+        
         assertThat(participantRepository.findById(organizerParticipant.getSudionikId()))
                 .isEmpty();
         assertThat(participantRepository.findById(secondOrganizer.getSudionikId()))

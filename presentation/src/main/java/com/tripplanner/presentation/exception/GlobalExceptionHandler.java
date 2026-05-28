@@ -9,10 +9,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Global exception handler for REST controllers.
- * Converts exceptions into properly formatted JSON error responses.
- */
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 

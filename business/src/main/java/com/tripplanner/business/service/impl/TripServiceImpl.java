@@ -18,9 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of {@link TripService}.
- */
+
 @Service
 @Transactional
 public class TripServiceImpl implements TripService {
@@ -42,16 +40,16 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public TripResponseDTO createTrip(Integer userId, CreateTripDTO createDTO) {
-        // Validate dates
+        
         if (createDTO.getDatumKraj().isBefore(createDTO.getDatumPoc())) {
             throw new IllegalArgumentException("End date must be after or equal to start date");
         }
 
-        // Get user
+        
         Korisnik user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Create trip
+        
         Putovanje trip = Putovanje.builder()
                 .naziv(createDTO.getNaziv())
                 .opis(createDTO.getOpis())
@@ -62,7 +60,7 @@ public class TripServiceImpl implements TripService {
 
         trip = tripRepository.save(trip);
 
-        // Add creator as organizer
+        
         Sudionik organizer = Sudionik.builder()
                 .putovanje(trip)
                 .korisnik(user)
@@ -104,7 +102,7 @@ public class TripServiceImpl implements TripService {
         Putovanje trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
 
-        // Update fields if provided
+        
         if (updateDTO.getNaziv() != null) {
             trip.setNaziv(updateDTO.getNaziv());
         }
@@ -118,7 +116,7 @@ public class TripServiceImpl implements TripService {
             trip.setDatumKraj(updateDTO.getDatumKraj());
         }
 
-        // Validate dates
+        
         if (trip.getDatumKraj().isBefore(trip.getDatumPoc())) {
             throw new IllegalArgumentException("End date must be after or equal to start date");
         }

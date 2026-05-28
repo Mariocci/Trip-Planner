@@ -18,9 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of {@link ParticipantService}.
- */
+
 @Service
 @Transactional
 public class ParticipantServiceImpl implements ParticipantService {
@@ -52,7 +50,7 @@ public class ParticipantServiceImpl implements ParticipantService {
         Korisnik user = userRepository.findByEmail(addDTO.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + addDTO.getEmail()));
 
-        // Check if user is already a participant
+        
         if (participantRepository.findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(tripId, user.getKorisnikId()).isPresent()) {
             throw new RuntimeException("User is already a participant of this trip");
         }
@@ -91,7 +89,7 @@ public class ParticipantServiceImpl implements ParticipantService {
             throw new RuntimeException("Access denied: Only organizers can update participant roles");
         }
 
-        // Check if trying to demote the last organizer
+        
         if ("organizer".equals(participant.getUloga()) && !"organizer".equalsIgnoreCase(updateDTO.getUloga())) {
             Long organizerCount = participantRepository.countOrganizersByPutovanjeId(tripId);
             if (organizerCount <= 1) {
@@ -115,7 +113,7 @@ public class ParticipantServiceImpl implements ParticipantService {
             throw new RuntimeException("Access denied: Only organizers can remove participants");
         }
 
-        // Check if this is the last organizer
+        
         if ("organizer".equals(participant.getUloga())) {
             Long organizerCount = participantRepository.countOrganizersByPutovanjeId(tripId);
             if (organizerCount <= 1) {

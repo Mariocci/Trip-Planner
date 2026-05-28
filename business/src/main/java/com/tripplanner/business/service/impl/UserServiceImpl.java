@@ -8,9 +8,7 @@ import com.tripplanner.domain.entity.Korisnik;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Implementation of {@link UserService}.
- */
+
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
@@ -66,7 +64,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email)
                 .map(this::mapToResponseDTO)
                 .orElseGet(() -> {
-                    // Parse name into first and last name
+                    
                     String[] nameParts = name != null ? name.split(" ", 2) : new String[]{"", ""};
                     String firstName = nameParts.length > 0 ? nameParts[0] : "";
                     String lastName = nameParts.length > 1 ? nameParts[1] : "";

@@ -48,23 +48,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Integration tests for {@link ExpenseController} with the real
- * {@link ExpenseServiceImpl} and {@link TripServiceImpl} wired in,
- * and the underlying repositories mocked.
- *
- * <p>This verifies the request-response flow through the presentation
- * layer into the business layer without touching a real database. The
- * focus of task 10.2 is on the expense creation endpoint, in particular:
- * <ul>
- *   <li>Successful flow returns 201 and persists an expense + recalculates the trip total</li>
- *   <li>Authorization checks prevent access by non-participants</li>
- *   <li>Error responses surface descriptive messages</li>
- *   <li>Request validation rejects invalid bodies before reaching the service</li>
- * </ul>
- *
- * <p>Validates: Requirements 5.1, 5.3, 5.5, 5.7, 5.9</p>
- */
+
 @WebMvcTest(
         controllers = ExpenseController.class,
         excludeAutoConfiguration = {
@@ -92,7 +76,7 @@ class ExpenseControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // Repository layer is mocked - service implementations are real
+    
     @MockBean
     private ExpenseRepository expenseRepository;
 
@@ -141,9 +125,9 @@ class ExpenseControllerIntegrationTest {
                 .build();
     }
 
-    // ------------------------------------------------------------------
-    //  POST /api/trips/{tripId}/expenses  (createExpense)
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("POST /api/trips/{tripId}/expenses (createExpense)")
@@ -152,25 +136,25 @@ class ExpenseControllerIntegrationTest {
         @Test
         @DisplayName("createExpense_validRequestAsParticipant_returns201AndRecalculatesTripTotal")
         void createExpense_validRequestAsParticipant_returns201AndRecalculatesTripTotal() throws Exception {
-            // Given: user is a participant of the trip
+            
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, ORGANIZER_USER_ID))
                     .thenReturn(Optional.of(organizerParticipant));
 
-            // Trip exists
+            
             when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
 
-            // Saving the expense returns a persisted instance with an ID
+            
             when(expenseRepository.save(any(Trosak.class))).thenAnswer(invocation -> {
                 Trosak saved = invocation.getArgument(0);
                 saved.setTrosakId(EXPENSE_ID);
                 return saved;
             });
 
-            // After saving, the recalculation queries the new total
+            
             when(expenseRepository.sumByPutovanjeId(TRIP_ID)).thenReturn(new BigDecimal("100.50"));
 
-            // The participant count map needs at least one participant for the response DTO
+            
             when(participantRepository.findByPutovanje_PutovanjeId(TRIP_ID))
                     .thenReturn(List.of(organizerParticipant));
 
@@ -180,7 +164,7 @@ class ExpenseControllerIntegrationTest {
                     .datum(LocalDate.of(2024, 6, 5))
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(post(BASE_URL, TRIP_ID)
                             .param("userId", ORGANIZER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -192,10 +176,10 @@ class ExpenseControllerIntegrationTest {
                     .andExpect(jsonPath("$.datum").value("2024-06-05"))
                     .andExpect(jsonPath("$.putovanjeId").value(TRIP_ID));
 
-            // Verify the expense was persisted with the correct values
+            
             verify(expenseRepository, times(1)).save(any(Trosak.class));
 
-            // Verify the trip total was recalculated and persisted
+            
             verify(expenseRepository, atLeastOnce()).sumByPutovanjeId(TRIP_ID);
             verify(tripRepository, atLeastOnce()).save(any(Putovanje.class));
             assertThat(trip.getUkTrosak()).isEqualByComparingTo("100.50");
@@ -204,7 +188,7 @@ class ExpenseControllerIntegrationTest {
         @Test
         @DisplayName("createExpense_userNotParticipant_returns500WithAccessDeniedMessage")
         void createExpense_userNotParticipant_returns500WithAccessDeniedMessage() throws Exception {
-            // Given: user is NOT a participant of the trip
+            
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, NON_PARTICIPANT_USER_ID))
                     .thenReturn(Optional.empty());
@@ -215,10 +199,10 @@ class ExpenseControllerIntegrationTest {
                     .datum(LocalDate.of(2024, 6, 5))
                     .build();
 
-            // When / Then - the real service throws RuntimeException("Access denied: ..."),
-            // which the GlobalExceptionHandler maps to HTTP 500 with the error message in
-            // the response body. This verifies authorization checks reach all the way
-            // through the controller and that the error response carries the message.
+            
+            
+            
+            
             mockMvc.perform(post(BASE_URL, TRIP_ID)
                             .param("userId", NON_PARTICIPANT_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -229,8 +213,8 @@ class ExpenseControllerIntegrationTest {
                     .andExpect(jsonPath("$.status").value(500))
                     .andExpect(jsonPath("$.timestamp").exists());
 
-            // Critically, no expense should have been persisted and no recalculation
-            // should have happened when the authorization check fails.
+            
+            
             verify(expenseRepository, never()).save(any(Trosak.class));
             verify(expenseRepository, never()).sumByPutovanjeId(any());
             verify(tripRepository, never()).save(any(Putovanje.class));
@@ -239,7 +223,7 @@ class ExpenseControllerIntegrationTest {
         @Test
         @DisplayName("createExpense_tripNotFound_returns500WithTripNotFoundMessage")
         void createExpense_tripNotFound_returns500WithTripNotFoundMessage() throws Exception {
-            // Given: user is a participant but the trip itself cannot be loaded
+            
             when(participantRepository
                     .findByPutovanje_PutovanjeIdAndKorisnik_KorisnikId(TRIP_ID, ORGANIZER_USER_ID))
                     .thenReturn(Optional.of(organizerParticipant));
@@ -251,7 +235,7 @@ class ExpenseControllerIntegrationTest {
                     .datum(LocalDate.of(2024, 6, 5))
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(post(BASE_URL, TRIP_ID)
                             .param("userId", ORGANIZER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -266,14 +250,14 @@ class ExpenseControllerIntegrationTest {
         @Test
         @DisplayName("createExpense_missingIznos_returns400AndDoesNotInvokeService")
         void createExpense_missingIznos_returns400AndDoesNotInvokeService() throws Exception {
-            // Given - iznos is @NotNull on CreateExpenseDTO
+            
             CreateExpenseDTO invalid = CreateExpenseDTO.builder()
                     .iznos(null)
                     .opis("Hotel")
                     .datum(LocalDate.of(2024, 6, 5))
                     .build();
 
-            // When / Then - validation rejects request before service is hit
+            
             mockMvc.perform(post(BASE_URL, TRIP_ID)
                             .param("userId", ORGANIZER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -288,14 +272,14 @@ class ExpenseControllerIntegrationTest {
         @Test
         @DisplayName("createExpense_negativeIznos_returns400AndDoesNotInvokeService")
         void createExpense_negativeIznos_returns400AndDoesNotInvokeService() throws Exception {
-            // Given - iznos is @Positive on CreateExpenseDTO
+            
             CreateExpenseDTO invalid = CreateExpenseDTO.builder()
                     .iznos(new BigDecimal("-10.00"))
                     .opis("Refund")
                     .datum(LocalDate.of(2024, 6, 5))
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(post(BASE_URL, TRIP_ID)
                             .param("userId", ORGANIZER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -308,14 +292,14 @@ class ExpenseControllerIntegrationTest {
         @Test
         @DisplayName("createExpense_missingDatum_returns400AndDoesNotInvokeService")
         void createExpense_missingDatum_returns400AndDoesNotInvokeService() throws Exception {
-            // Given - datum is @NotNull on CreateExpenseDTO
+            
             CreateExpenseDTO invalid = CreateExpenseDTO.builder()
                     .iznos(new BigDecimal("50.00"))
                     .opis("Lunch")
                     .datum(null)
                     .build();
 
-            // When / Then
+            
             mockMvc.perform(post(BASE_URL, TRIP_ID)
                             .param("userId", ORGANIZER_USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)

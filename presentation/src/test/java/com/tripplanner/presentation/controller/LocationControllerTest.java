@@ -30,20 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Unit tests for {@link LocationController}.
- *
- * <p>Tests the controller in isolation by mocking {@link LocationService}.
- * Focuses on the {@code GET /api/locations/{id}} endpoint as required by the
- * task, but also includes checks for HTTP status codes, JSON serialization
- * (request and response), and verification of mock interactions with the
- * service layer.</p>
- *
- * <p>Security filters are disabled for these tests so the controller logic
- * can be exercised without requiring a valid JWT token.</p>
- *
- * <p>Validates: Requirements 3.7, 3.9, 3.10, 3.11, 3.12, 3.13</p>
- */
+
 @WebMvcTest(
         controllers = LocationController.class,
         excludeAutoConfiguration = {
@@ -83,10 +70,10 @@ class LocationControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getLocationById_existingId_returns200OkWithLocation")
         void getLocationById_existingId_returns200OkWithLocation() throws Exception {
-            // Given - service returns the requested location
+            
             when(locationService.getLocationById(1)).thenReturn(eiffelTower);
 
-            // When/Then - HTTP 200 OK with serialized location DTO
+            
             performGet("/api/locations/1")
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith("application/json"))
@@ -96,22 +83,22 @@ class LocationControllerTest extends ControllerTestBase {
                     .andExpect(jsonPath("$.grad").value("Paris"))
                     .andExpect(jsonPath("$.drzava").value("France"));
 
-            // Verify service was called exactly once with the path id
+            
             verify(locationService, times(1)).getLocationById(1);
         }
 
         @Test
         @DisplayName("getLocationById_nonExistentId_returns500WhenServiceThrowsRuntimeException")
         void getLocationById_nonExistentId_returns500WhenServiceThrowsRuntimeException() throws Exception {
-            // Given - the production LocationServiceImpl throws RuntimeException
-            // ("Location not found") when the entity is missing.
-            // The GlobalExceptionHandler maps RuntimeException -> 500.
-            // This test documents the current contract between controller,
-            // service, and global handler.
+            
+            
+            
+            
+            
             when(locationService.getLocationById(999))
                     .thenThrow(new RuntimeException("Location not found"));
 
-            // When/Then
+            
             performGet("/api/locations/999")
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.status").value(500))
@@ -124,11 +111,11 @@ class LocationControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getLocationById_serviceThrowsIllegalArgument_returns400BadRequest")
         void getLocationById_serviceThrowsIllegalArgument_returns400BadRequest() throws Exception {
-            // Given - service rejects the supplied id with an IllegalArgumentException
+            
             when(locationService.getLocationById(-1))
                     .thenThrow(new IllegalArgumentException("Invalid location id"));
 
-            // When/Then - GlobalExceptionHandler maps IllegalArgumentException -> 400
+            
             performGet("/api/locations/-1")
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.status").value(400))
@@ -140,24 +127,24 @@ class LocationControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getLocationById_nonNumericId_isHandledByGlobalExceptionHandler")
         void getLocationById_nonNumericId_isHandledByGlobalExceptionHandler() throws Exception {
-            // When/Then - Spring fails to convert "abc" to Integer and raises
-            // MethodArgumentTypeMismatchException (a RuntimeException). The
-            // current GlobalExceptionHandler maps RuntimeException -> 500 with
-            // a descriptive message. This test documents that contract.
+            
+            
+            
+            
             performGet("/api/locations/abc")
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.status").value(500))
                     .andExpect(jsonPath("$.message").exists())
                     .andExpect(jsonPath("$.timestamp").exists());
 
-            // Service must never be invoked for an unparseable path variable
+            
             verifyNoInteractions(locationService);
         }
 
         @Test
         @DisplayName("getLocationById_passesPathVariableToServiceUnchanged")
         void getLocationById_passesPathVariableToServiceUnchanged() throws Exception {
-            // Given
+            
             LocationResponseDTO another = LocationResponseDTO.builder()
                     .lokacijaId(42)
                     .naziv("Colosseum")
@@ -167,21 +154,21 @@ class LocationControllerTest extends ControllerTestBase {
                     .build();
             when(locationService.getLocationById(42)).thenReturn(another);
 
-            // When
+            
             performGet("/api/locations/42")
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.lokacijaId").value(42))
                     .andExpect(jsonPath("$.naziv").value("Colosseum"))
                     .andExpect(jsonPath("$.grad").value("Rome"));
 
-            // Then - controller forwards the path variable verbatim
+            
             verify(locationService).getLocationById(eq(42));
         }
 
         @Test
         @DisplayName("getLocationById_responseMirrorsServiceOutputIncludingNullFields")
         void getLocationById_responseMirrorsServiceOutputIncludingNullFields() throws Exception {
-            // Given - location with optional 'adresa' field unset
+            
             LocationResponseDTO minimal = LocationResponseDTO.builder()
                     .lokacijaId(7)
                     .naziv("Simple Location")
@@ -190,7 +177,7 @@ class LocationControllerTest extends ControllerTestBase {
                     .build();
             when(locationService.getLocationById(7)).thenReturn(minimal);
 
-            // When/Then - all fields including null 'adresa' are serialized
+            
             performGet("/api/locations/7")
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.lokacijaId").value(7))
@@ -205,11 +192,11 @@ class LocationControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("getLocationById_withWrongHttpMethod_returns405MethodNotAllowed")
         void getLocationById_withWrongHttpMethod_returns405MethodNotAllowed() throws Exception {
-            // When/Then - PUT is not mapped on /api/locations/{id}
+            
             performPut("/api/locations/1", new CreateLocationDTO())
                     .andExpect(status().isMethodNotAllowed());
 
-            // Service must not be called for unsupported methods
+            
             verify(locationService, never()).getLocationById(any());
         }
     }
@@ -221,7 +208,7 @@ class LocationControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createLocation_validRequest_returns201CreatedWithLocation")
         void createLocation_validRequest_returns201CreatedWithLocation() throws Exception {
-            // Given - valid creation payload, service returns persisted location
+            
             CreateLocationDTO createDTO = CreateLocationDTO.builder()
                     .naziv("Eiffel Tower")
                     .adresa("Champ de Mars, 5 Av. Anatole France")
@@ -232,7 +219,7 @@ class LocationControllerTest extends ControllerTestBase {
             when(locationService.createLocation(any(CreateLocationDTO.class)))
                     .thenReturn(eiffelTower);
 
-            // When/Then - request body is deserialized, response body is serialized
+            
             performPost("/api/locations", createDTO)
                     .andExpect(status().isCreated())
                     .andExpect(content().contentTypeCompatibleWith("application/json"))
@@ -247,16 +234,16 @@ class LocationControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createLocation_missingRequiredFields_returns400BadRequest")
         void createLocation_missingRequiredFields_returns400BadRequest() throws Exception {
-            // Given - body missing @NotBlank naziv/grad/drzava
+            
             CreateLocationDTO invalid = CreateLocationDTO.builder()
                     .adresa("Some address")
                     .build();
 
-            // When/Then - bean validation triggers a 4xx response
+            
             performPost("/api/locations", invalid)
                     .andExpect(status().is4xxClientError());
 
-            // Service must not be invoked when validation fails
+            
             verify(locationService, never()).createLocation(any());
         }
     }

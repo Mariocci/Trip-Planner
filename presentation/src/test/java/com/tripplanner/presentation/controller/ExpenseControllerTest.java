@@ -44,16 +44,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Unit tests for {@link ExpenseController} using MockMvc with a mocked
- * {@link ExpenseService}. Verifies HTTP status codes, JSON serialization /
- * deserialization, request validation and that the controller correctly
- * delegates to the service layer.
- *
- * <p>This test sets up MockMvc using {@link MockMvcBuilders#standaloneSetup}
- * so the test focuses on the controller and the global exception handler
- * without loading the full Spring context (or its security configuration).
- */
+
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ExpenseController Unit Tests")
 class ExpenseControllerTest extends ControllerTestBase {
@@ -76,7 +67,7 @@ class ExpenseControllerTest extends ControllerTestBase {
     void setUp() {
         expenseController = new ExpenseController(expenseService);
 
-        // Configure ObjectMapper to handle Java 8 date types (LocalDate)
+        
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -99,9 +90,9 @@ class ExpenseControllerTest extends ControllerTestBase {
                 .build();
     }
 
-    // ------------------------------------------------------------------
-    //  POST /api/trips/{tripId}/expenses  (createExpense)
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("POST /api/trips/{tripId}/expenses")
@@ -130,7 +121,7 @@ class ExpenseControllerTest extends ControllerTestBase {
                     .andExpect(jsonPath("$.datum").value("2024-06-05"))
                     .andExpect(jsonPath("$.putovanjeId").value(TRIP_ID));
 
-            // Verify service interaction with correct DTO contents
+            
             ArgumentCaptor<CreateExpenseDTO> captor = ArgumentCaptor.forClass(CreateExpenseDTO.class);
             verify(expenseService, times(1))
                     .createExpense(eq(TRIP_ID), eq(USER_ID), captor.capture());
@@ -143,7 +134,7 @@ class ExpenseControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createExpense_missingIznos_returns400BadRequest")
         void createExpense_missingIznos_returns400BadRequest() throws Exception {
-            // iznos is @NotNull
+            
             CreateExpenseDTO request = CreateExpenseDTO.builder()
                     .iznos(null)
                     .opis("Hotel")
@@ -162,7 +153,7 @@ class ExpenseControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createExpense_negativeIznos_returns400BadRequest")
         void createExpense_negativeIznos_returns400BadRequest() throws Exception {
-            // iznos must be @Positive
+            
             CreateExpenseDTO request = CreateExpenseDTO.builder()
                     .iznos(new BigDecimal("-10.00"))
                     .opis("Refund")
@@ -181,7 +172,7 @@ class ExpenseControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("createExpense_missingDatum_returns400BadRequest")
         void createExpense_missingDatum_returns400BadRequest() throws Exception {
-            // datum is @NotNull
+            
             CreateExpenseDTO request = CreateExpenseDTO.builder()
                     .iznos(new BigDecimal("50.00"))
                     .opis("Lunch")
@@ -226,7 +217,7 @@ class ExpenseControllerTest extends ControllerTestBase {
             when(expenseService.createExpense(eq(TRIP_ID), eq(USER_ID), any(CreateExpenseDTO.class)))
                     .thenThrow(new RuntimeException("Access denied: User is not a participant of this trip"));
 
-            // GlobalExceptionHandler maps generic RuntimeException -> 500
+            
             mockMvc.perform(post(BASE_URL, TRIP_ID)
                             .param("userId", USER_ID.toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -264,9 +255,9 @@ class ExpenseControllerTest extends ControllerTestBase {
         }
     }
 
-    // ------------------------------------------------------------------
-    //  GET /api/trips/{tripId}/expenses  (listTripExpenses)
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("GET /api/trips/{tripId}/expenses")
@@ -342,9 +333,9 @@ class ExpenseControllerTest extends ControllerTestBase {
         }
     }
 
-    // ------------------------------------------------------------------
-    //  GET /api/trips/{tripId}/expenses/{expenseId}  (getExpenseById)
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("GET /api/trips/{tripId}/expenses/{expenseId}")
@@ -384,9 +375,9 @@ class ExpenseControllerTest extends ControllerTestBase {
         }
     }
 
-    // ------------------------------------------------------------------
-    //  PUT /api/trips/{tripId}/expenses/{expenseId}  (updateExpense)
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("PUT /api/trips/{tripId}/expenses/{expenseId}")
@@ -434,8 +425,8 @@ class ExpenseControllerTest extends ControllerTestBase {
         @Test
         @DisplayName("updateExpense_partialUpdate_returns200OkWithMergedFields")
         void updateExpense_partialUpdate_returns200OkWithMergedFields() throws Exception {
-            // Only iznos provided - other fields remain null in the DTO and
-            // the service is responsible for retaining current values.
+            
+            
             UpdateExpenseDTO request = UpdateExpenseDTO.builder()
                     .iznos(new BigDecimal("75.25"))
                     .build();
@@ -507,9 +498,9 @@ class ExpenseControllerTest extends ControllerTestBase {
         }
     }
 
-    // ------------------------------------------------------------------
-    //  DELETE /api/trips/{tripId}/expenses/{expenseId}  (deleteExpense)
-    // ------------------------------------------------------------------
+    
+    
+    
 
     @Nested
     @DisplayName("DELETE /api/trips/{tripId}/expenses/{expenseId}")

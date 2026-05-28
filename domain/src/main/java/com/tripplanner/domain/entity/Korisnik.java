@@ -6,9 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Entity representing a user (Korisnik) in the system.
- */
+
 @Entity
 @Table(name = "KORISNIK")
 @Data

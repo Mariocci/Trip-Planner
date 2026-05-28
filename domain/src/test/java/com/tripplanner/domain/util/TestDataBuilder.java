@@ -8,78 +8,45 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Utility class providing fluent builders for creating test entities.
- * Provides a convenient API for building test data with sensible defaults.
- */
+
 public class TestDataBuilder {
 
-    /**
-     * Start building a Korisnik (User) entity.
-     *
-     * @return UserBuilder instance
-     */
+    
     public static UserBuilder user() {
         return new UserBuilder();
     }
 
-    /**
-     * Start building a Putovanje (Trip) entity.
-     *
-     * @return TripBuilder instance
-     */
+    
     public static TripBuilder trip() {
         return new TripBuilder();
     }
 
-    /**
-     * Start building an Aktivnost (Activity) entity.
-     *
-     * @return ActivityBuilder instance
-     */
+    
     public static ActivityBuilder activity() {
         return new ActivityBuilder();
     }
 
-    /**
-     * Start building a Trosak (Expense) entity.
-     *
-     * @return ExpenseBuilder instance
-     */
+    
     public static ExpenseBuilder expense() {
         return new ExpenseBuilder();
     }
 
-    /**
-     * Start building a Sudionik (Participant) entity.
-     *
-     * @return ParticipantBuilder instance
-     */
+    
     public static ParticipantBuilder participant() {
         return new ParticipantBuilder();
     }
 
-    /**
-     * Start building a Lokacija (Location) entity.
-     *
-     * @return LocationBuilder instance
-     */
+    
     public static LocationBuilder location() {
         return new LocationBuilder();
     }
 
-    /**
-     * Start building a Kategorija (Category) entity.
-     *
-     * @return CategoryBuilder instance
-     */
+    
     public static CategoryBuilder category() {
         return new CategoryBuilder();
     }
 
-    /**
-     * Fluent builder for Korisnik entities.
-     */
+    
     public static class UserBuilder {
         private Integer korisnikId;
         private String ime = "John";
@@ -122,9 +89,7 @@ public class TestDataBuilder {
         }
     }
 
-    /**
-     * Fluent builder for Putovanje entities.
-     */
+    
     public static class TripBuilder {
         private Integer putovanjeId;
         private String naziv = "Test Trip";
@@ -192,9 +157,7 @@ public class TestDataBuilder {
         }
     }
 
-    /**
-     * Fluent builder for Aktivnost entities.
-     */
+    
     public static class ActivityBuilder {
         private Integer aktivnostId;
         private String naziv = "Test Activity";
@@ -255,9 +218,7 @@ public class TestDataBuilder {
         }
     }
 
-    /**
-     * Fluent builder for Trosak entities.
-     */
+    
     public static class ExpenseBuilder {
         private Integer trosakId;
         private BigDecimal iznos = new BigDecimal("100.00");
@@ -306,9 +267,7 @@ public class TestDataBuilder {
         }
     }
 
-    /**
-     * Fluent builder for Sudionik entities.
-     */
+    
     public static class ParticipantBuilder {
         private Integer sudionikId;
         private String uloga = "participant";
@@ -355,9 +314,7 @@ public class TestDataBuilder {
         }
     }
 
-    /**
-     * Fluent builder for Lokacija entities.
-     */
+    
     public static class LocationBuilder {
         private Integer lokacijaId;
         private String naziv = "Test Location";
@@ -401,9 +358,7 @@ public class TestDataBuilder {
         }
     }
 
-    /**
-     * Fluent builder for Kategorija entities.
-     */
+    
     public static class CategoryBuilder {
         private Integer kategorijaId;
         private String naziv = "Test Category";

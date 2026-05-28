@@ -15,13 +15,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Unit tests for {@link ExpenseRepository}.
- * <p>
- * Uses @DataJpaTest to configure an in-memory H2 database for testing
- * repository operations without requiring a full application context.
- * </p>
- */
+
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class ExpenseRepositoryTest {
@@ -40,7 +34,7 @@ class ExpenseRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // Create test trips
+        
         testTrip1 = Putovanje.builder()
                 .naziv("Paris Trip")
                 .opis("Exploring Paris")
@@ -60,7 +54,7 @@ class ExpenseRepositoryTest {
         entityManager.persist(testTrip1);
         entityManager.persist(testTrip2);
 
-        // Create test expenses for trip1
+        
         expense1 = Trosak.builder()
                 .iznos(BigDecimal.valueOf(150.00))
                 .opis("Hotel accommodation")
@@ -90,10 +84,10 @@ class ExpenseRepositoryTest {
 
     @Test
     void findByPutovanje_PutovanjeId_WithExistingTrip_ShouldReturnAllExpenses() {
-        // When
+        
         List<Trosak> results = expenseRepository.findByPutovanje_PutovanjeId(testTrip1.getPutovanjeId());
 
-        // Then
+        
         assertThat(results).hasSize(3);
         assertThat(results).extracting(Trosak::getOpis)
                 .containsExactlyInAnyOrder("Hotel accommodation", "Restaurant dinner", "Museum tickets");
@@ -101,56 +95,56 @@ class ExpenseRepositoryTest {
 
     @Test
     void findByPutovanje_PutovanjeId_WithTripWithoutExpenses_ShouldReturnEmptyList() {
-        // When
+        
         List<Trosak> results = expenseRepository.findByPutovanje_PutovanjeId(testTrip2.getPutovanjeId());
 
-        // Then
+        
         assertThat(results).isEmpty();
     }
 
     @Test
     void findByPutovanje_PutovanjeId_WithNonExistingTrip_ShouldReturnEmptyList() {
-        // When
+        
         List<Trosak> results = expenseRepository.findByPutovanje_PutovanjeId(99999);
 
-        // Then
+        
         assertThat(results).isEmpty();
     }
 
     @Test
     void sumByPutovanjeId_WithExistingExpenses_ShouldReturnCorrectSum() {
-        // When
+        
         BigDecimal sum = expenseRepository.sumByPutovanjeId(testTrip1.getPutovanjeId());
 
-        // Then
-        // 150.00 + 75.50 + 25.00 = 250.50
+        
+        
         assertThat(sum).isEqualByComparingTo(BigDecimal.valueOf(250.50));
     }
 
     @Test
     void sumByPutovanjeId_WithNoExpenses_ShouldReturnNull() {
-        // When
+        
         BigDecimal sum = expenseRepository.sumByPutovanjeId(testTrip2.getPutovanjeId());
 
-        // Then
+        
         assertThat(sum).isNull();
     }
 
     @Test
     void sumByPutovanjeId_WithNonExistingTrip_ShouldReturnNull() {
-        // When
+        
         BigDecimal sum = expenseRepository.sumByPutovanjeId(99999);
 
-        // Then
+        
         assertThat(sum).isNull();
     }
 
     @Test
     void findById_WithExistingId_ShouldReturnExpense() {
-        // When
+        
         var result = expenseRepository.findById(expense1.getTrosakId());
 
-        // Then
+        
         assertThat(result).isPresent();
         assertThat(result.get().getOpis()).isEqualTo("Hotel accommodation");
         assertThat(result.get().getIznos()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
@@ -158,7 +152,7 @@ class ExpenseRepositoryTest {
 
     @Test
     void save_ShouldPersistNewExpense() {
-        // Given
+        
         Trosak newExpense = Trosak.builder()
                 .iznos(BigDecimal.valueOf(50.00))
                 .opis("Transportation")
@@ -166,24 +160,24 @@ class ExpenseRepositoryTest {
                 .putovanje(testTrip1)
                 .build();
 
-        // When
+        
         Trosak saved = expenseRepository.save(newExpense);
 
-        // Then
+        
         assertThat(saved.getTrosakId()).isNotNull();
         assertThat(expenseRepository.findById(saved.getTrosakId())).isPresent();
     }
 
     @Test
     void save_ShouldUpdateExistingExpense() {
-        // Given
+        
         expense1.setIznos(BigDecimal.valueOf(200.00));
         expense1.setOpis("Updated hotel accommodation");
 
-        // When
+        
         Trosak updated = expenseRepository.save(expense1);
 
-        // Then
+        
         assertThat(updated.getTrosakId()).isEqualTo(expense1.getTrosakId());
         assertThat(updated.getIznos()).isEqualByComparingTo(BigDecimal.valueOf(200.00));
         assertThat(updated.getOpis()).isEqualTo("Updated hotel accommodation");
@@ -191,10 +185,10 @@ class ExpenseRepositoryTest {
 
     @Test
     void findAll_ShouldReturnAllExpenses() {
-        // When
+        
         List<Trosak> results = expenseRepository.findAll();
 
-        // Then
+        
         assertThat(results).hasSize(3);
         assertThat(results).extracting(Trosak::getOpis)
                 .containsExactlyInAnyOrder("Hotel accommodation", "Restaurant dinner", "Museum tickets");
@@ -202,44 +196,44 @@ class ExpenseRepositoryTest {
 
     @Test
     void delete_WithExistingExpense_ShouldRemoveExpense() {
-        // Given
+        
         Integer expenseId = expense1.getTrosakId();
 
-        // When
+        
         expenseRepository.delete(expense1);
         entityManager.flush();
 
-        // Then
+        
         assertThat(expenseRepository.findById(expenseId)).isEmpty();
         assertThat(expenseRepository.findAll()).hasSize(2);
     }
 
     @Test
     void deleteById_WithExistingId_ShouldRemoveExpense() {
-        // Given
+        
         Integer expenseId = expense2.getTrosakId();
 
-        // When
+        
         expenseRepository.deleteById(expenseId);
         entityManager.flush();
 
-        // Then
+        
         assertThat(expenseRepository.findById(expenseId)).isEmpty();
         assertThat(expenseRepository.findAll()).hasSize(2);
     }
 
     @Test
     void findById_WithNonExistingId_ShouldReturnEmpty() {
-        // When
+        
         var result = expenseRepository.findById(99999);
 
-        // Then
+        
         assertThat(result).isEmpty();
     }
 
     @Test
     void save_WithTripRelationship_ShouldPersistRelationship() {
-        // Given
+        
         Trosak newExpense = Trosak.builder()
                 .iznos(BigDecimal.valueOf(100.00))
                 .opis("Shopping")
@@ -247,12 +241,12 @@ class ExpenseRepositoryTest {
                 .putovanje(testTrip1)
                 .build();
 
-        // When
+        
         Trosak saved = expenseRepository.save(newExpense);
         entityManager.flush();
         entityManager.clear();
 
-        // Then
+        
         Trosak retrieved = expenseRepository.findById(saved.getTrosakId()).orElseThrow();
         assertThat(retrieved.getPutovanje()).isNotNull();
         assertThat(retrieved.getPutovanje().getPutovanjeId()).isEqualTo(testTrip1.getPutovanjeId());
