@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  id="Definitions_1" 
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  
+  <bpmn:message id="Message_BookingConfirmation" name="BookingConfirmationMessage" />
+  
+  <bpmn:process id="TripApprovalProcess" name="Trip Approval Process" isExecutable="true" camunda:historyTimeToLive="P30D">
+    
+    <bpmn:startEvent id="StartEvent" name="Zahtjev za putovanje">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:userTask id="ManagerReviewTask" name="Manager pregledava zahtjev" camunda:assignee="manager">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:incoming>Flow_BookingFailed</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="ApprovalGateway" name="Odobren?">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:intermediateCatchEvent id="WaitForBookingConfirmation" name="Ceka potvrdu bookinga">
+      <bpmn:incoming>Flow_Approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Message_BookingConfirmation" />
+    </bpmn:intermediateCatchEvent>
+    
+    <bpmn:exclusiveGateway id="BookingGateway" name="Booking potvrden?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_BookingConfirmed</bpmn:outgoing>
+      <bpmn:outgoing>Flow_BookingFailed</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:endEvent id="EndEventSuccess" name="Putovanje odobreno">
+      <bpmn:incoming>Flow_BookingConfirmed</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:endEvent id="EndEventRejected" name="Putovanje odbijeno">
+      <bpmn:incoming>Flow_Rejected</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent" targetRef="ManagerReviewTask" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="ManagerReviewTask" targetRef="ApprovalGateway" />
+    
+    <bpmn:sequenceFlow id="Flow_Approved" name="Da" sourceRef="ApprovalGateway" targetRef="WaitForBookingConfirmation">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:sequenceFlow id="Flow_Rejected" name="Ne" sourceRef="ApprovalGateway" targetRef="EndEventRejected">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="WaitForBookingConfirmation" targetRef="BookingGateway" />
+    
+    <bpmn:sequenceFlow id="Flow_BookingConfirmed" name="Da" sourceRef="BookingGateway" targetRef="EndEventSuccess">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${bookingConfirmed == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:sequenceFlow id="Flow_BookingFailed" name="Ne - ponovni pregled" sourceRef="BookingGateway" targetRef="ManagerReviewTask">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${bookingConfirmed == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+  </bpmn:process>
+  
+</bpmn:definitions>

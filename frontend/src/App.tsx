@@ -3,8 +3,11 @@ import { useAuth0 } from '@auth0/auth0-react'
 import './App.css'
 import TripMaster from './components/TripMaster'
 import TripDetail from './components/TripDetail'
+import WorkflowManager from './components/WorkflowManager'
 import type { Trip } from './types/index'
 import { api, setupAxiosInterceptor } from './api/axios-config'
+
+type View = 'trips' | 'workflow';
 
 function App() {
   const { isLoading, isAuthenticated, loginWithRedirect, logout, user, getAccessTokenSilently } = useAuth0();
@@ -12,6 +15,7 @@ function App() {
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<number | null>(null);
+  const [currentView, setCurrentView] = useState<View>('trips');
 
   // Setup axios interceptor when Auth0 is ready
   useEffect(() => {
@@ -123,6 +127,34 @@ function App() {
       <header>
         <h1>Trip Planner</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <button 
+            onClick={() => setCurrentView('trips')}
+            style={{
+              padding: '8px 16px',
+              fontSize: '14px',
+              backgroundColor: currentView === 'trips' ? '#007bff' : '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Putovanja
+          </button>
+          <button 
+            onClick={() => setCurrentView('workflow')}
+            style={{
+              padding: '8px 16px',
+              fontSize: '14px',
+              backgroundColor: currentView === 'workflow' ? '#007bff' : '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Workflow (Camunda)
+          </button>
           {user && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               {user.picture && <img src={user.picture} alt={user.name} style={{ width: '32px', height: '32px', borderRadius: '50%' }} />}
@@ -147,25 +179,31 @@ function App() {
       </header>
       
       <main>
-        {userId && (
-          <TripMaster
-            trips={trips}
-            selectedTrip={selectedTrip}
-            onSelectTrip={setSelectedTrip}
-            onTripCreated={handleTripCreated}
-            onTripUpdated={handleTripUpdated}
-            onTripDeleted={handleTripDeleted}
-            loading={loading}
-            userId={userId}
-          />
+        {currentView === 'trips' && userId && (
+          <>
+            <TripMaster
+              trips={trips}
+              selectedTrip={selectedTrip}
+              onSelectTrip={setSelectedTrip}
+              onTripCreated={handleTripCreated}
+              onTripUpdated={handleTripUpdated}
+              onTripDeleted={handleTripDeleted}
+              loading={loading}
+              userId={userId}
+            />
+
+            {selectedTrip && (
+              <TripDetail
+                trip={selectedTrip}
+                userId={userId}
+                onTripUpdated={loadTrips}
+              />
+            )}
+          </>
         )}
 
-        {selectedTrip && userId && (
-          <TripDetail
-            trip={selectedTrip}
-            userId={userId}
-            onTripUpdated={loadTrips}
-          />
+        {currentView === 'workflow' && (
+          <WorkflowManager />
         )}
       </main>
     </div>
